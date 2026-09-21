@@ -6,3 +6,4 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+gcm-diagnose.log
