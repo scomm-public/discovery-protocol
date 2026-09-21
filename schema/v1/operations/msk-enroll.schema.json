@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/operations/msk-enroll.schema.json",
+  "title": "MSK enroll operation input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["msk"],
+  "properties": {
+    "msk": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "publicKey"],
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "const": "ed25519"
+        },
+        "publicKey": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Base64url-encoded Ed25519 public key"
+        }
+      }
+    }
+  }
+}

@@ -34,7 +34,7 @@ A future authenticity design SHOULD consider how to prevent silent downgrade of 
 
 Cached or long-lived documents can advertise revoked keys, outdated forms, or withdrawn policies. Stale data can be as harmful as forged data.
 
-Cache lifetime, revalidation, and revocation are protocol-level issues and are not standardized in `0.1-draft`. Implementations that cache MUST assume they can be wrong.
+Cache lifetime, revalidation, and revocation are protocol-level issues and are not fully standardized in `0.2-draft`. Implementations that cache MUST assume they can be wrong.
 
 ### Compromised discovery services
 
@@ -74,17 +74,56 @@ JSON Schema itself can be expensive to validate (pathological patterns, huge `en
 
 Looking up a mailbox can reveal that a client intends to communicate with that mailbox. See [privacy.md](privacy.md). This is a security and privacy issue: query logs enable surveillance and correlation.
 
+## HTTP service API threats (`0.2-draft`)
+
+The generic HTTP API ([http-api.md](http-api.md)) increases flexibility. Implementations MUST preserve these invariants:
+
+### Type confusion
+
+A client MUST NOT be able to reinterpret a signed payload for one operation or resource type as another. Signatures in the SComm MSK profile bind `operation` and `payload_sha256` (see [authorization.md](authorization.md)).
+
+### Schema / version substitution
+
+Servers MUST validate resource and operation payloads against the registered schema for the declared type and version. Reject `unsupported_type`, `unsupported_version`, and `schema_validation_failed` rather than coercing.
+
+### Authorization-profile confusion
+
+A satisfied challenge MUST remain purpose-bound. Challenge proofs MUST NOT escalate into unrelated operations (for example OTP for MSK replace authorizing vault upload).
+
+### Replay and cross-mailbox reuse
+
+Signed requests MUST bind principal (mailbox identity), timestamp (bounded skew), and nonce. Cross-mailbox reuse of a signature MUST fail.
+
+### Challenge abuse
+
+Email OTP challenges MUST rate-limit creation, expire, bound attempts, and never return the OTP in API responses. OTP flooding and brute force MUST be mitigated.
+
+### Private / public visibility mistakes
+
+Private vault ciphertext, recovery envelopes, and device inventories MUST NOT be projected into `GET /v1/mailboxes/{mailbox}`.
+
+### Idempotency abuse
+
+Retries MUST NOT double-apply MSK rotation or unbounded challenge issuance. Prefer signed nonce replay protection and `Idempotency-Key` on creates.
+
+### Oversized generic JSON
+
+Servers SHOULD enforce size limits on generic resource/operation bodies independent of schema validity.
+
+### Unknown type handling
+
+Unknown optional public types SHOULD be ignored by tolerant readers. Unknown types on write SHOULD fail closed when the server does not support them.
+
 ## What this draft does not specify
 
-The following are explicit non-goals for protocol `0.1-draft`:
+The following remain non-goals for protocol `0.2-draft` authenticity of *public documents* and resolution:
 
-- document signatures or Merkle / transparency proofs;
-- TLS requirements for a particular resolver;
-- DNSSEC or HTTPS well-known lookup rules;
-- key discovery via Web Key Directory or similar as a mandatory mechanism;
-- trust-on-first-use vs TOFU-pinning policies.
+- document signatures or Merkle / transparency proofs for Discovery Documents;
+- mandatory DNSSEC or HTTPS well-known lookup rules;
+- key discovery via Web Key Directory as a mandatory mechanism;
+- trust-on-first-use vs TOFU-pinning policies for resolution.
 
-Implementers MAY experiment, but MUST NOT claim conformance to a Discovery authenticity profile that this repository has not defined.
+The HTTP API and SComm MSK hosted authorization profile **are** specified. Implementers MAY experiment with additional authenticity layers, but MUST NOT claim conformance to a Discovery authenticity profile that this repository has not defined.
 
 ## Guidance for experimental implementations
 
@@ -93,3 +132,4 @@ Implementers MAY experiment, but MUST NOT claim conformance to a Discovery authe
 - Ignore unknown extensions by default.
 - Copy core schemas into clients; do not require `discovery.scomm.ai` at validation time.
 - Log and display the source of a document (file, test resolver, network) to developers.
+- Treat MSK as a hosted-service authorization profile, not as the only possible Discovery management identity.

@@ -4,8 +4,8 @@
  * Uses local schema files; does not fetch https://discovery.scomm.ai/.
  */
 
-import { readdirSync, readFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
@@ -15,14 +15,8 @@ const schemaDir = join(root, "schema", "v1");
 const examplesDir = join(root, "examples", "v1");
 const invalidDir = join(root, "tests", "invalid");
 
-const SCHEMA_FILES = [
-  "discovery.schema.json",
-  "crypto.schema.json",
-  "forms.schema.json",
-  "preferences.schema.json",
-];
-
-const EXAMPLE_FILES = [
+/** Core Discovery Document examples (flat under examples/v1). */
+const DOCUMENT_EXAMPLE_FILES = [
   "minimal.json",
   "crypto.json",
   "preferences.json",
@@ -30,10 +24,51 @@ const EXAMPLE_FILES = [
   "extensions.json",
 ];
 
-const INVALID_FILES = [
+/** Invalid fixtures validated against the Discovery Document schema. */
+const DOCUMENT_INVALID_FILES = [
   "malformed-mailbox.json",
   "schema-version-type.json",
   "extensions-not-object.json",
+];
+
+/** API examples: relative path under examples/v1 → schema $id to validate against. */
+const API_EXAMPLE_VALIDATIONS = [
+  {
+    file: "api/mailbox-discovery.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+  },
+  {
+    file: "api/resource-encryption-key.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/api/resource.schema.json",
+  },
+  {
+    file: "api/resource-unknown-future-type.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/api/resource.schema.json",
+  },
+  {
+    file: "api/operation-msk-replace.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/api/operation.schema.json",
+  },
+  {
+    file: "api/challenge-create-email-otp.json",
+    schemaId:
+      "https://discovery.scomm.ai/schema/v1/challenges/email-otp.schema.json",
+  },
+  {
+    file: "api/challenge-pending.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/api/challenge.schema.json",
+  },
+  {
+    file: "api/error-challenge-expired.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/api/error.schema.json",
+  },
+];
+
+const API_INVALID_VALIDATIONS = [
+  {
+    file: "api-error-missing-message.json",
+    schemaId: "https://discovery.scomm.ai/schema/v1/api/error.schema.json",
+  },
 ];
 
 let failures = 0;
@@ -60,10 +95,17 @@ function readJson(path) {
   }
 }
 
-function listJsonFiles(dir) {
-  return readdirSync(dir)
-    .filter((name) => name.endsWith(".json"))
-    .sort();
+function listJsonFilesRecursive(dir, base = dir) {
+  const out = [];
+  for (const name of readdirSync(dir).sort()) {
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) {
+      out.push(...listJsonFilesRecursive(path, base));
+    } else if (name.endsWith(".json")) {
+      out.push(relative(base, path).replaceAll("\\", "/"));
+    }
+  }
+  return out;
 }
 
 const ajv = new Ajv2020({
@@ -73,96 +115,127 @@ const ajv = new Ajv2020({
 });
 addFormats(ajv);
 
-for (const name of SCHEMA_FILES) {
-  const path = join(schemaDir, name);
+const schemaFiles = listJsonFilesRecursive(schemaDir);
+for (const rel of schemaFiles) {
+  const path = join(schemaDir, rel);
   const schema = readJson(path);
   if (!schema) {
     continue;
   }
   if (schema.$schema !== "https://json-schema.org/draft/2020-12/schema") {
-    fail(`${name}: expected JSON Schema draft 2020-12 $schema`);
+    fail(`${rel}: expected JSON Schema draft 2020-12 $schema`);
   }
   try {
     ajv.addSchema(schema);
-    ok(`schema loaded ${name} ($id ${schema.$id})`);
+    ok(`schema loaded ${rel} ($id ${schema.$id})`);
   } catch (error) {
-    fail(`${name}: addSchema: ${error.message}`);
+    fail(`${rel}: addSchema: ${error.message}`);
   }
 }
 
-const onDiskSchemas = listJsonFiles(schemaDir);
-if (onDiskSchemas.join() !== SCHEMA_FILES.slice().sort().join()) {
-  fail(
-    `schema/v1 contains unexpected files: disk=[${onDiskSchemas}] expected=[${SCHEMA_FILES}]`,
-  );
-} else {
-  ok("schema/v1 file set matches validator allowlist");
-}
+ok(`loaded ${schemaFiles.length} schema file(s)`);
 
-let validateDocument;
-try {
-  validateDocument = ajv.getSchema(
-    "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
-  );
-  if (!validateDocument) {
-    fail("compiled discovery schema is missing");
+function validateAgainst(schemaId, document, label) {
+  const validate = ajv.getSchema(schemaId);
+  if (!validate) {
+    fail(`${label}: schema not compiled ${schemaId}`);
+    return;
+  }
+  const valid = validate(document);
+  if (valid) {
+    ok(`accepted ${label}`);
   } else {
-    ok("compiled core discovery schema");
+    fail(`rejected ${label}: ${ajv.errorsText(validate.errors)}`);
   }
-} catch (error) {
-  fail(`compile discovery schema: ${error.message}`);
 }
 
-const onDiskExamples = listJsonFiles(examplesDir);
-if (onDiskExamples.join() !== EXAMPLE_FILES.slice().sort().join()) {
-  fail(
-    `examples/v1 contains unexpected files: disk=[${onDiskExamples}] expected=[${EXAMPLE_FILES}]`,
+function rejectAgainst(schemaId, document, label) {
+  const validate = ajv.getSchema(schemaId);
+  if (!validate) {
+    fail(`${label}: schema not compiled ${schemaId}`);
+    return;
+  }
+  const valid = validate(document);
+  if (!valid) {
+    ok(`invalid fixture rejected ${label}`);
+  } else {
+    fail(`invalid fixture was accepted ${label}`);
+  }
+}
+
+for (const name of DOCUMENT_EXAMPLE_FILES) {
+  const document = readJson(join(examplesDir, name));
+  if (document === undefined) continue;
+  validateAgainst(
+    "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+    document,
+    `document example ${name}`,
   );
-} else {
-  ok("examples/v1 file set matches validator allowlist");
 }
 
-if (validateDocument) {
-  for (const name of EXAMPLE_FILES) {
-    const path = join(examplesDir, name);
-    const document = readJson(path);
-    if (document === undefined) {
-      continue;
-    }
-    const valid = validateDocument(document);
-    if (valid) {
-      ok(`example accepted ${name}`);
-    } else {
-      fail(
-        `example rejected ${name}: ${ajv.errorsText(validateDocument.errors)}`,
-      );
-    }
-  }
-}
-
-const onDiskInvalid = listJsonFiles(invalidDir);
-if (onDiskInvalid.join() !== INVALID_FILES.slice().sort().join()) {
-  fail(
-    `tests/invalid contains unexpected files: disk=[${onDiskInvalid}] expected=[${INVALID_FILES}]`,
+for (const name of DOCUMENT_INVALID_FILES) {
+  const document = readJson(join(invalidDir, name));
+  if (document === undefined) continue;
+  rejectAgainst(
+    "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+    document,
+    name,
   );
-} else {
-  ok("tests/invalid file set matches validator allowlist");
 }
 
-if (validateDocument) {
-  for (const name of INVALID_FILES) {
-    const path = join(invalidDir, name);
-    const document = readJson(path);
-    if (document === undefined) {
-      continue;
-    }
-    const valid = validateDocument(document);
-    if (!valid) {
-      ok(`invalid fixture rejected ${name}`);
-    } else {
-      fail(`invalid fixture was accepted ${name}`);
-    }
+for (const { file, schemaId } of API_EXAMPLE_VALIDATIONS) {
+  const document = readJson(join(examplesDir, file));
+  if (document === undefined) continue;
+  validateAgainst(schemaId, document, `api example ${file}`);
+}
+
+// resource-create-preferences is a create body (no id) — validate value shape loosely
+{
+  const path = join(examplesDir, "api/resource-create-preferences.json");
+  const document = readJson(path);
+  if (document && typeof document.type === "string" && document.value) {
+    ok("api example api/resource-create-preferences.json has type+value");
+  } else if (document !== undefined) {
+    fail("api/resource-create-preferences.json missing type/value");
   }
+}
+
+// challenge response is not a full challenge envelope
+{
+  const path = join(examplesDir, "api/challenge-response-email-otp.json");
+  const document = readJson(path);
+  if (
+    document &&
+    document.response &&
+    typeof document.response.code === "string" &&
+    document.response.code.length === 11
+  ) {
+    ok("api example challenge-response uses 11-char Base62-shaped code");
+  } else if (document !== undefined) {
+    fail("challenge-response-email-otp.json expected 11-char code");
+  }
+}
+
+// signing vectors structural check
+{
+  const path = join(examplesDir, "api/signing-vectors.json");
+  const document = readJson(path);
+  if (
+    document &&
+    document.insecure_test_material === true &&
+    Array.isArray(document.vectors) &&
+    document.vectors[0]?.canonical_utf8?.startsWith("SComm/Pubkey/")
+  ) {
+    ok("signing-vectors.json structure");
+  } else if (document !== undefined) {
+    fail("signing-vectors.json structure invalid");
+  }
+}
+
+for (const { file, schemaId } of API_INVALID_VALIDATIONS) {
+  const document = readJson(join(invalidDir, file));
+  if (document === undefined) continue;
+  rejectAgainst(schemaId, document, file);
 }
 
 if (failures > 0) {

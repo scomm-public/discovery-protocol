@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/challenges/email-otp.schema.json",
+  "title": "Email OTP challenge create request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "purpose"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "const": "https://discovery.scomm.ai/challenges/email-otp/v1"
+    },
+    "purpose": {
+      "type": "string",
+      "format": "uri",
+      "description": "Operation or recovery purpose this challenge authorizes when satisfied"
+    },
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    }
+  }
+}

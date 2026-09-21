@@ -1,0 +1,15 @@
+{
+  "id": "res_enc_1",
+  "type": "https://discovery.scomm.ai/types/crypto/encryption-key/v1",
+  "schemaVersion": "1.0",
+  "visibility": "public",
+  "value": {
+    "family": "openpgp",
+    "keyId": "ABCD1234",
+    "publicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----\n...\n-----END PGP PUBLIC KEY BLOCK-----"
+  },
+  "metadata": {
+    "createdAt": "2026-09-21T12:00:00.000Z",
+    "updatedAt": "2026-09-21T12:00:00.000Z"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "id": "chal_01HXYZ",
+  "type": "https://discovery.scomm.ai/challenges/email-otp/v1",
+  "status": "pending",
+  "purpose": "https://discovery.scomm.ai/operations/msk/replace/v1",
+  "expiresAt": "2026-09-21T12:10:00.000Z",
+  "attemptsRemaining": 5
+}

@@ -1,12 +1,13 @@
 # Discovery Protocol
 
 **Document status:** Early draft  
-**Protocol version described here:** `0.1-draft`  
-**Core schema series described here:** `1.0` (see [`schema/v1`](../schema/v1))
+**Protocol version described here:** `0.2-draft`  
+**Core schema series described here:** `1.0` (see [`schema/v1`](../schema/v1))  
+**HTTP API major version:** `1` (see [http-api.md](http-api.md))
 
-This document specifies the conceptual protocol: what a Discovery Document is, how clients interpret it, and what this version deliberately leaves unspecified.
+This document specifies the conceptual protocol: what a Discovery Document is, how clients interpret it, and how it relates to the HTTP service API.
 
-It does **not** standardize mailbox lookup, DNS records, HTTP APIs, or a central registry.
+It does **not** standardize mailbox→service **resolution** (DNS, well-known, provider delegation, or a central registry). The HTTP service API for a known discovery origin **is** specified in [http-api.md](http-api.md).
 
 ## Terminology
 
@@ -23,10 +24,13 @@ A capability standardized by the core Discovery schema (for example `crypto`, `p
 A capability defined outside the core specification using a globally unique namespace, typically a URI.
 
 **Resolver**  
-A mechanism or service capable of locating a Discovery Document for a mailbox. Resolvers are not specified in protocol `0.1-draft`.
+A mechanism or service capable of locating which discovery **origin** serves a mailbox. Resolvers are not specified in protocol `0.2-draft`.
 
 **Discovery service**  
-An implementation providing discovery functionality (publication, storage, and/or resolution).
+An implementation providing discovery functionality (publication, storage, and/or resolution). A service that implements [http-api.md](http-api.md) exposes a stable HTTP vocabulary for resources, operations, and challenges.
+
+**Resource / operation / challenge**  
+First-class HTTP API concepts. See [resources.md](resources.md), [operations.md](operations.md), [challenges.md](challenges.md), and [authorization.md](authorization.md). Extensibility SHOULD prefer new types and schemas over new endpoints.
 
 **Reference implementation**  
 An implementation maintained to demonstrate the specification without becoming the specification itself. `discovery.scomm.ai` is intended to become one such implementation. It is not the standard.
@@ -61,13 +65,15 @@ Those URLs are **identifiers**. Hosting, content negotiation, and availability o
 
 JSON Schema is the initial normative structural mechanism. Compatibility with JSON-LD and richer semantic vocabularies is a **future design direction**. JSON-LD is not required in core schema `1.0`. A later revision MAY allow an optional `@context` (or equivalent) without making it mandatory.
 
-## 3. Protocol version vs schema version
+## 3. Protocol version vs schema version vs API version
 
-**Protocol version** (`0.1-draft` in this document) covers runtime behavior: resolution, transport, caching, authentication, publication, signatures, error handling, and federation — most of which are not yet specified.
+**Protocol version** (`0.2-draft` in this document) covers runtime behavior: the HTTP service API, caching guidance, authentication profiles, publication, signatures, error handling, and (still unspecified) mailbox→service resolution and federation.
 
-**Core schema version** (`schemaVersion` inside the document, currently `"1.0"`) covers the vocabulary of Discovery Documents.
+**Core schema version** (`schemaVersion` inside the document, currently `"1.0"`) covers the vocabulary of Discovery Documents. This HTTP work does **not** require bumping the document schema to `2.0`; projection remains `capabilities` + `extensions`.
 
-**Extension versions** are chosen by extension owners and are independent of both.
+**HTTP API major version** (`/v1/`) is independent of both. The same `/v1/` transport MAY carry independently versioned resource and operation schemas.
+
+**Extension versions** are chosen by extension owners and are independent of the above.
 
 See [versioning.md](versioning.md). Implementations MUST NOT treat a core schema version as implying a particular resolver design.
 
@@ -75,7 +81,7 @@ See [versioning.md](versioning.md). Implementations MUST NOT treat a core schema
 
 Discovery is conceptually associated with a mailbox. The Discovery Document identifies that mailbox in the `mailbox` field.
 
-This draft does not bind a mailbox to a single organizational domain model, vendor account, or provider API. How a client **finds** the document for a mailbox is intentionally unspecified (see [§8](#8-future-resolution-specification)).
+This draft does not bind a mailbox to a single organizational domain model, vendor account, or provider API. How a client **finds which service origin** is authoritative for a mailbox is intentionally unspecified (see [§8](#8-future-resolution-specification)). Once an origin is known, [http-api.md](http-api.md) specifies `GET /v1/mailboxes/{mailbox}`.
 
 ## 5. Discovery Document
 
@@ -178,15 +184,16 @@ Compatible implementations
 
 ## 8. Future Resolution Specification
 
-Protocol `0.1-draft` intentionally does **not** fully standardize lookup or resolution.
+Protocol `0.2-draft` specifies the **HTTP service API** once a client already knows a discovery service origin. It intentionally does **not** fully standardize **mailbox → origin** resolution.
 
-A future document (likely a protocol minor or major revision, not a silent core-schema change) should specify how a client maps:
+Distinguish:
 
 ```text
-mailbox  -->  Discovery Document
+mailbox  -->  discovery service origin     (unspecified)
+origin   -->  Discovery Document via HTTP  (specified: http-api.md)
 ```
 
-Candidate approaches, **none of which is selected here**, include:
+A future document should specify how a client maps a mailbox to an authoritative origin. Candidate approaches, **none of which is selected here**, include:
 
 - a centralized resolver;
 - DNS records (for example, URI or HTTPS records, or other DNS-based hints);
@@ -201,7 +208,7 @@ Until that work exists:
 - implementations MAY experiment with local files, test fixtures, or private resolvers;
 - interoperability of resolution across vendors SHOULD NOT be assumed.
 
-Related open questions include publication APIs, cache lifetimes, error codes, and federation between discovery services.
+Related open questions include cache lifetimes and federation between discovery services. Publication and error envelopes for a known origin are covered in [http-api.md](http-api.md).
 
 ## 9. Forms (non-transport)
 

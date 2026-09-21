@@ -3,8 +3,10 @@
 Discovery Protocol keeps three version series separate. Mixing them causes clients to couple document vocabulary to transport, or to freeze third-party extensions whenever the core schema changes.
 
 ```text
-Protocol version     →  how documents are found, fetched, cached, and authenticated
+Protocol version     →  HTTP service API behavior, auth profiles, (future) resolution
+HTTP API major       →  /v1/ path prefix (independent of document schemaVersion)
 Core schema version  →  what a Discovery Document may contain (core vocabulary)
+Resource/op schemas  →  per-type management payload vocabulary
 Extension version    →  the vocabulary of one namespaced extension
 ```
 
@@ -12,7 +14,8 @@ This repository currently publishes:
 
 | Series | Initial identifier | Stability |
 | --- | --- | --- |
-| Protocol | `0.1-draft` | Experimental; resolution is unspecified |
+| Protocol | `0.2-draft` | Experimental; HTTP API specified; mailbox→origin resolution unspecified |
+| HTTP API | `/v1/` | Experimental transport major |
 | Core schema | `1.0` (schema directory `schema/v1`) | Experimental vocabulary; not a declared stable release |
 | Extensions | Per extension URI | Owned outside the core |
 
@@ -30,7 +33,7 @@ The **protocol version** covers evolution of:
 - error handling;
 - federation between discovery services.
 
-Protocol `0.1-draft` documents the data model and explicitly postpones those runtime topics. A future protocol revision MAY add resolution rules without changing `schemaVersion` if the document vocabulary is unchanged. Conversely, the core schema MAY gain optional fields while resolution remains unspecified.
+Protocol `0.2-draft` documents the data model and the HTTP service API (resources, operations, challenges). It still postpones mailbox→origin resolution. A future protocol revision MAY add resolution rules without changing `schemaVersion` if the document vocabulary is unchanged. Conversely, the core schema MAY gain optional fields while resolution remains unspecified. New capabilities SHOULD normally add resource/operation types under `/v1/` rather than new HTTP endpoints or a new API major.
 
 Clients MUST NOT infer resolver behavior from `schemaVersion` alone.
 

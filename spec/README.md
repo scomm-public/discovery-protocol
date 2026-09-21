@@ -5,7 +5,12 @@ These documents define the Discovery Protocol independently of any hosted servic
 | Document | Contents |
 | --- | --- |
 | [protocol.md](protocol.md) | Mailbox-centric model, Discovery Documents, capabilities, validation, and unresolved resolution |
-| [versioning.md](versioning.md) | Protocol version vs core schema version vs extension versions |
+| [http-api.md](http-api.md) | Stable HTTP service API (`/v1/`), errors, idempotency |
+| [resources.md](resources.md) | Resource envelopes, visibility, projection to capabilities |
+| [operations.md](operations.md) | Generic operations for state transitions |
+| [challenges.md](challenges.md) | Generic challenges (email OTP as first type) |
+| [authorization.md](authorization.md) | Authorization profiles (MSK hosted profile) |
+| [versioning.md](versioning.md) | Protocol vs HTTP API vs core schema vs extension versions |
 | [extensions.md](extensions.md) | URI-namespaced third-party capabilities |
 | [security-considerations.md](security-considerations.md) | Attacks, authenticity, and open cryptographic design questions |
 | [privacy.md](privacy.md) | Lookup leakage and privacy-preserving resolution as future work |

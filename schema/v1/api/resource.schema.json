@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/api/resource.schema.json",
+  "$comment": "Management resource envelope. Public Discovery Documents use capabilities/extensions projection, not this envelope.",
+  "title": "Discovery resource envelope",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "schemaVersion", "value"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "type": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1
+    },
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "visibility": {
+      "type": "string",
+      "enum": ["public", "private"]
+    },
+    "value": {
+      "type": "object"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "type": "https://discovery.scomm.ai/operations/msk/replace/v1",
+  "schemaVersion": "1.0",
+  "input": {
+    "msk": {
+      "algorithm": "ed25519",
+      "publicKey": "Ei_Ps8ZkAALwDQIAJocCfSXnaNRdRU_QycTvC-IgpK4"
+    }
+  }
+}

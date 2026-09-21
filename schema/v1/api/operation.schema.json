@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/api/operation.schema.json",
+  "$comment": "Generic operation request envelope (logical). Hosted MSK profile may wrap input inside a signed mutation envelope.",
+  "title": "Discovery operation request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["type", "schemaVersion", "input"],
+  "properties": {
+    "type": {
+      "type": "string",
+      "format": "uri",
+      "minLength": 1
+    },
+    "schemaVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 32
+    },
+    "input": {
+      "type": "object"
+    }
+  }
+}

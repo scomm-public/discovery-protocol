@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/api/challenge.schema.json",
+  "title": "Discovery challenge",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "type", "status"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "type": {
+      "type": "string",
+      "format": "uri"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["pending", "satisfied", "expired", "failed", "consumed"]
+    },
+    "purpose": {
+      "type": "string",
+      "format": "uri"
+    },
+    "expiresAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "attemptsRemaining": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

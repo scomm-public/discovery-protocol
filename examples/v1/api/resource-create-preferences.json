@@ -1,0 +1,7 @@
+{
+  "type": "https://discovery.scomm.ai/types/preferences/languages/v1",
+  "schemaVersion": "1.0",
+  "value": {
+    "languages": ["en", "ur"]
+  }
+}

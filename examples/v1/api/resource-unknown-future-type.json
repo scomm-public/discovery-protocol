@@ -1,0 +1,9 @@
+{
+  "id": "res_future_1",
+  "type": "https://example.org/discovery/types/appointment-policy/v1",
+  "schemaVersion": "1.0",
+  "visibility": "public",
+  "value": {
+    "bookingRequired": true
+  }
+}

@@ -26,6 +26,8 @@ Even a distributed design can leak intent to:
 
 A Discovery Document can itself leak sensitive metadata: preferred languages, forms that imply a medical or legal context, security requirements, or organizational policies. Mailbox owners SHOULD treat published capabilities as public unless a future confidentiality mechanism exists (none is specified in this draft).
 
+Private account state managed via authenticated APIs (encrypted vaults, recovery envelopes) MUST NOT be mirrored into the public Discovery Document. See [resources.md](resources.md) visibility rules and [http-api.md](http-api.md).
+
 Clients SHOULD avoid copying Discovery Documents into unrelated telemetry.
 
 ## Future mitigations (not specified here)

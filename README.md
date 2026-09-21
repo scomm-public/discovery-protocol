@@ -152,13 +152,16 @@ This is not an Internet Standard, not an IETF RFC, and not a stable v1.0 protoco
 
 ## Versioning
 
-Three version series are independent:
+Three version series (plus HTTP API major) are independent:
 
-1. **Protocol version** — resolution, HTTP behavior, caching, authenticity, and related runtime rules (mostly unspecified in this draft).
-2. **Core schema version** — the vocabulary inside a Discovery Document (`schemaVersion`).
-3. **Extension versions** — owned by each extension's namespace.
+1. **Protocol version** (`0.2-draft`) — HTTP service API, auth profiles; mailbox→origin resolution still unspecified.
+2. **HTTP API major** — `/v1/` path prefix (independent of document `schemaVersion`).
+3. **Core schema version** — the vocabulary inside a Discovery Document (`schemaVersion` `"1.0"`).
+4. **Extension / resource / operation versions** — owned by each type's namespace.
 
 Minor schema revisions are additive by default. Breaking semantic changes require a new major version. Details: [spec/versioning.md](spec/versioning.md).
+
+HTTP paths: [spec/http-api.md](spec/http-api.md).
 
 ## Extensions
 
