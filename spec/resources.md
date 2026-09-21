@@ -52,9 +52,11 @@ Requirements:
 | `public` | Eligible for projection into `GET /v1/mailboxes/{mailbox}` |
 | `private` | Authenticated management only; MUST NOT appear in the public document |
 
-Encrypted vault ciphertext, recovery envelopes, and similar confidential
-material MUST use `private` (or dedicated non-Discovery APIs). They MUST NOT be
-published as public Discovery capabilities.
+Encrypted vault ciphertext, recovery envelopes, password-wrapped vault
+backups (`scomm-vault-export` hosted on the write host), and similar
+confidential material MUST use `private` (or dedicated non-Discovery APIs).
+They MUST NOT be published as public Discovery capabilities and MUST NOT
+appear on `GET /v1/mailboxes/{mailbox}`.
 
 ## 3. Public vs management representation
 
