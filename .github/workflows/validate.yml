@@ -1,0 +1,28 @@
+name: Validate schemas and examples
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: JSON Schema and examples
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install validation dependencies
+        run: npm ci
+
+      - name: Validate schemas, examples, and invalid fixtures
+        run: npm test

@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+  "$comment": "Provisional canonical identifier. Hosting at this URL is not required for validation and is not a resolution protocol. Core schema series 1.x; this file describes version 1.0.",
+  "title": "Discovery Document",
+  "description": "Extensible machine-readable information published for a mailbox. Clients obtain this document and interpret the capabilities they understand. Encryption and verification keys are optional capabilities, not the protocol itself.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["schemaVersion", "mailbox"],
+  "properties": {
+    "$schema": {
+      "description": "Optional JSON Schema identifier for this document. Values under https://discovery.scomm.ai/schema/ are provisional canonical identifiers.",
+      "type": "string",
+      "format": "uri"
+    },
+    "schemaVersion": {
+      "description": "Core Discovery schema version for this document's vocabulary. Distinct from the Discovery Protocol version (resolution/transport). The current defined value is 1.0. Later 1.x values may appear in additive revisions of this schema series.",
+      "type": "string",
+      "const": "1.0"
+    },
+    "mailbox": {
+      "description": "Mailbox (email address) this document describes.",
+      "type": "string",
+      "format": "email",
+      "minLength": 3,
+      "maxLength": 254
+    },
+    "capabilities": {
+      "description": "Core capabilities. All properties are optional. Unknown properties MUST be ignored by clients that do not understand them (open-world / additive evolution).",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "crypto": {
+          "$ref": "crypto.schema.json"
+        },
+        "preferences": {
+          "$ref": "preferences.schema.json"
+        },
+        "forms": {
+          "$ref": "forms.schema.json"
+        }
+      }
+    },
+    "extensions": {
+      "description": "Third-party capabilities keyed by globally unique URIs. Unknown extensions MUST NOT cause rejection solely because they are unrecognized. SComm approval is not required to define an extension.",
+      "type": "object",
+      "propertyNames": {
+        "type": "string",
+        "format": "uri",
+        "minLength": 1
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    }
+  }
+}

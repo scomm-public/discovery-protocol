@@ -1,0 +1,15 @@
+{
+  "$schema": "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+  "schemaVersion": "1.0",
+  "mailbox": "clinic@example.org",
+  "capabilities": {
+    "preferences": {
+      "languages": ["en"]
+    }
+  },
+  "extensions": {
+    "https://example.org/discovery/calendar/v1": {
+      "bookingRequired": true
+    }
+  }
+}

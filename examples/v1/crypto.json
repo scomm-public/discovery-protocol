@@ -1,0 +1,35 @@
+{
+  "$schema": "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+  "schemaVersion": "1.0",
+  "mailbox": "alice@example.com",
+  "capabilities": {
+    "crypto": {
+      "encryption": {
+        "keys": [
+          {
+            "family": "openpgp",
+            "keyId": "0123456789ABCDEF",
+            "publicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----\nComment: example-not-a-real-key\n-----END PGP PUBLIC KEY BLOCK-----",
+            "algorithms": ["pkcesk", "aes256"]
+          }
+        ]
+      },
+      "verification": {
+        "keys": [
+          {
+            "family": "openpgp",
+            "keyId": "FEDCBA9876543210",
+            "publicKey": "-----BEGIN PGP PUBLIC KEY BLOCK-----\nComment: example-verification-key-not-real\n-----END PGP PUBLIC KEY BLOCK-----",
+            "algorithms": ["ed25519"]
+          },
+          {
+            "family": "smime",
+            "keyId": "ski:example",
+            "uri": "https://example.com/certs/alice-signing.pem",
+            "algorithms": ["sha256"]
+          }
+        ]
+      }
+    }
+  }
+}

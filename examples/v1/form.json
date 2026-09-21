@@ -1,0 +1,17 @@
+{
+  "$schema": "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
+  "schemaVersion": "1.0",
+  "mailbox": "support@example.com",
+  "capabilities": {
+    "forms": [
+      {
+        "id": "support-request",
+        "version": "1.0",
+        "title": "Support request",
+        "description": "Information requested before or with a support message.",
+        "schema": "https://example.com/forms/support-request.schema.json",
+        "web": "https://example.com/forms/support-request"
+      }
+    ]
+  }
+}

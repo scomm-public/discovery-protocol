@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/crypto.schema.json",
+  "$comment": "Provisional canonical identifier and provisional crypto shape. This is a discovery-level capability, not a copy of any particular key-server data model. Formats, encoding, revocation, and external key references are expected to evolve.",
+  "title": "Crypto capability",
+  "description": "Cryptographic material and hints for a mailbox. Encryption and signature verification are distinct semantic roles. A mailbox MAY omit this capability entirely, publish only one role, or publish empty key lists. Families MAY include OpenPGP, S/MIME (X.509), post-quantum schemes, and others; this schema does not exhaustively enumerate them.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "encryption": {
+      "description": "Keys and hints intended for encrypting to this mailbox. Do not use these keys for signature verification unless a future family profile explicitly allows dual use.",
+      "$ref": "#/$defs/keySet"
+    },
+    "verification": {
+      "description": "Keys and hints intended for verifying signatures attributed to this mailbox. Do not use these keys for encryption unless a future family profile explicitly allows dual use.",
+      "$ref": "#/$defs/keySet"
+    }
+  },
+  "$defs": {
+    "keySet": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/key"
+          }
+        }
+      }
+    },
+    "key": {
+      "description": "A public key or a pointer toward one. Inline material and identifiers are optional so later revisions can emphasize external references. Encoding of publicKey is family-specific and not fully specified here.",
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "family": {
+          "description": "Cryptographic family identifier. Examples (non-exhaustive, not a closed enum): openpgp, smime, x509, age, pq. Prefer lowercase tokens; future profiles may define a registry.",
+          "type": "string",
+          "minLength": 1
+        },
+        "keyId": {
+          "description": "Family-specific key identifier (fingerprint, key ID, SKI, etc.). Format is not globally standardized in this draft.",
+          "type": "string",
+          "minLength": 1
+        },
+        "publicKey": {
+          "description": "Optional inline public key material. Encoding is family-specific (for example an OpenPGP armored key or a certificate PEM). Prefer well-known encodings in later family profiles rather than inventing a new envelope here.",
+          "type": "string",
+          "minLength": 1
+        },
+        "algorithms": {
+          "description": "Optional algorithm hints (family-specific tokens). Clients that do not recognize a token SHOULD ignore it.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "uri": {
+          "description": "Optional locator for externally referenced key material. Fetching this URI is not specified in protocol 0.1-draft and has security and privacy implications.",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

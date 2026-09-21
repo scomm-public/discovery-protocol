@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/forms.schema.json",
+  "$comment": "Provisional canonical identifier. JSON Schema is the source of truth for form instance structure. Form transport in email is not specified in this draft.",
+  "title": "Forms capability",
+  "description": "Structured forms a mailbox may ask correspondents to complete before or as part of communication. Each entry identifies a form and points at a JSON Schema. Clients MAY render natively, open an optional web representation, or ignore forms they cannot handle.",
+  "type": "array",
+  "items": {
+    "$ref": "#/$defs/form"
+  },
+  "$defs": {
+    "form": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["id", "version", "schema"],
+      "properties": {
+        "id": {
+          "description": "Stable identifier for this form within the mailbox's published set. Not globally unique by itself.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "description": "Form definition version (extension-owner or mailbox-owner controlled). Distinct from Discovery Protocol and core schema versions.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "title": {
+          "description": "Optional human-readable title.",
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "description": "Optional human-readable description.",
+          "type": "string",
+          "minLength": 1
+        },
+        "schema": {
+          "description": "URI of the JSON Schema that defines valid form instance data. Fetching and applying this schema is subject to security considerations (malicious URLs, schema resource limits).",
+          "type": "string",
+          "format": "uri"
+        },
+        "web": {
+          "description": "Optional human-usable web form URL. Clients that cannot render the JSON Schema MAY open this URL with user consent.",
+          "type": "string",
+          "format": "uri"
+        }
+      }
+    }
+  }
+}

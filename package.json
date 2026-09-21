@@ -1,0 +1,17 @@
+{
+  "name": "discovery-protocol",
+  "private": true,
+  "description": "Open Discovery Protocol specification, JSON Schemas, and validation fixtures.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node tests/validate.mjs",
+    "validate": "node tests/validate.mjs"
+  },
+  "devDependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1"
+  }
+}
