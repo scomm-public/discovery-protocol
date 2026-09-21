@@ -196,7 +196,17 @@ SDKs may later exist for languages such as:
 - JavaScript / TypeScript
 - WebAssembly
 
-This commit does not include SDKs. Schema documents in this repository are the source of truth for document structure.
+This repository does **not** include SDKs. Schema documents and
+`examples/v1/api/` fixtures (including `signing-vectors.json`) are the source of
+truth for document structure and MSK canonical bytes.
+
+SComm-maintained clients that consume these fixtures:
+
+- Dart + JS Track A: `scomm-ai/sdk_pubkey` (`secmail_pubkey_sdk`, `@scomm/discovery`)
+- Portable Vault **format** (not Discovery HTTP): `Cryptographic-Key-Vault-Format/ckvf`
+
+Independent implementations SHOULD pin a protocol commit and run the same
+API examples rather than redefining wire shapes.
 
 ## Terminology
 
