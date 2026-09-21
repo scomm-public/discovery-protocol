@@ -74,6 +74,7 @@ scope for this draft.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/v1/mailboxes/{mailbox}` | Public Discovery Document |
+| `GET` | `/v1/keys` | Capability-selected encryption key, or **gated** signing key (see §7.1) |
 | `GET` | `/v1/mailboxes/{mailbox}/resources` | List managed resources (auth; visibility-filtered) |
 | `GET` | `/v1/mailboxes/{mailbox}/resources/{resourceType}` | Get resources of a type |
 | `POST` | `/v1/mailboxes/{mailbox}/resources` | Create a resource |
@@ -85,7 +86,8 @@ scope for this draft.
 | `GET` | `/v1/mailboxes/{mailbox}/challenges/{challengeId}` | Challenge status (no secrets) |
 
 See [resources.md](resources.md), [operations.md](operations.md),
-[challenges.md](challenges.md), and [authorization.md](authorization.md).
+[challenges.md](challenges.md), [authorization.md](authorization.md), and
+[signing-key-lookup.md](signing-key-lookup.md).
 
 ## 7. Public mailbox GET
 
@@ -96,8 +98,22 @@ The document MUST include `schemaVersion` and `mailbox`. Public cryptographic
 material, preferences, forms, and extensions appear under `capabilities` and
 `extensions` as projected by the implementation.
 
+**Verification (signing) public key material MUST NOT appear** in this
+document. Serving signing keys requires `sha256` + `key_id` as specified in
+[signing-key-lookup.md](signing-key-lookup.md). Encryption keys MAY still be
+projected for send-side discovery.
+
 Private account state (encrypted vaults, recovery envelopes, device lists) MUST
 NOT appear in this response.
+
+## 7.1 Gated signing key GET
+
+`GET /v1/keys?sha256={hex}&key_id={id}&purpose=signing` returns at most one
+signing artifact’s public material when both the mailbox hash and key-id
+match a published active signing key.
+
+Omitting `key_id` when `purpose` is `signing` (or `verification`) MUST fail.
+Encryption-purpose selection without `key_id` MAY remain capability-based.
 
 ## 8. Errors
 

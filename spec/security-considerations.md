@@ -22,7 +22,24 @@ Encryption and verification are separate roles. An attacker may try to:
 
 Clients MUST use keys only for the role under which they were published, unless a later crypto profile defines a safe dual-use rule.
 
-The initial `crypto` schema is provisional. It does not yet define fingerprint binding, revocation, or preference among multiple keys.
+### Unbound signing-key disclosure (forbidden)
+
+Returning **all** (or an arbitrary “best”) **signing / verification** public
+keys for a mailbox to a caller that only knows the address — including via
+`GET /v1/mailboxes/{mailbox}` or `GET /v1/keys` without `key_id` — is a
+**security breach** relative to signature verification:
+
+- Verifiers MUST bind to the **key-id of the key that signed the message**,
+  not try every published signing key until one verifies.
+- Discovery services MUST require **both** `sha256(canonical mailbox)` and a
+  **valid key-id** before returning signing public key material.
+
+See [signing-key-lookup.md](signing-key-lookup.md). SComm key-ids are
+content-addressable (`xxxx-xxxx` from the first 32 bits of
+`SHA-256(public_material)`). Other publishers MAY register their own ids.
+
+The initial `crypto` schema is provisional. Revocation and authenticated
+document authenticity remain open design areas.
 
 ### Downgrade attacks
 

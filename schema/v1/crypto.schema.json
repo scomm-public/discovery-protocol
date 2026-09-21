@@ -40,9 +40,10 @@
           "minLength": 1
         },
         "keyId": {
-          "description": "Family-specific key identifier (fingerprint, key ID, SKI, etc.). Format is not globally standardized in this draft.",
+          "description": "Publisher key identifier. SComm content-addressable signing ids are eight hex digits grouped as xxxx-xxxx (first 32 bits of SHA-256 over published public_material). Other publishers MAY use their own opaque ids (for example OpenPGP Key IDs).",
           "type": "string",
-          "minLength": 1
+          "minLength": 1,
+          "maxLength": 128
         },
         "publicKey": {
           "description": "Optional inline public key material. Encoding is family-specific (for example an OpenPGP armored key or a certificate PEM). Prefer well-known encodings in later family profiles rather than inventing a new envelope here.",
