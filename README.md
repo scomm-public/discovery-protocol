@@ -203,7 +203,7 @@ truth for document structure and MSK canonical bytes.
 SComm-maintained clients that consume these fixtures:
 
 - Dart + JS Track A: `scomm-ai/sdk_pubkey` (`secmail_pubkey_sdk`, `@scomm/discovery`)
-- Portable Vault **format** (not Discovery HTTP): `Cryptographic-Key-Vault-Format/ckvf`
+- Portable Vault **format** (SComm.AI-maintained, not Discovery HTTP): [`scomm-public/ckvf`](https://github.com/scomm-public/ckvf)
 
 Independent implementations SHOULD pin a protocol commit and run the same
 API examples rather than redefining wire shapes.
