@@ -48,7 +48,7 @@ Typical mapping:
 
 | Methods | Host role |
 | --- | --- |
-| Public `GET /v1/mailboxes/{mailbox}` | Read |
+| Public `GET /v1/identities/{identity_id}` | Read |
 | Authenticated resource / operation / challenge mutations | Write |
 
 ## 4. Content types
@@ -58,32 +58,32 @@ Requests and responses use `application/json` unless otherwise noted.
 Implementations MAY accept `Accept: application/json`. Custom media types such
 as `application/discovery+json` are not required in this draft.
 
-## 5. Mailbox path parameters
+## 5. Identity path parameters
 
-`{mailbox}` is the mailbox (email address) the request concerns.
+`{identity_id}` is 64 lowercase hexadecimal characters: the leftmost 32 bytes
+of RFC 9497 base OPRF Finalize (ristretto255-SHA512, mode `0x00`) over the
+canonical mailbox. The mailbox address is not a path parameter and MUST NOT
+appear in discovery URLs.
 
-Clients MUST percent-encode mailbox path segments (RFC 3986). Addresses such as
-`alice+tag@example.com` MUST survive proxies without decoding `@` or `+`
-incorrectly.
-
-Internationalized email beyond the server's existing capabilities is out of
-scope for this draft.
+Clients obtain `identity_id` by blinding the canonical mailbox and sending
+only the blinded element to `POST /v1/id/oprf/evaluate`. The directory
+Evaluate response contains no address.
 
 ## 6. Stable paths
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/v1/mailboxes/{mailbox}` | Public Discovery Document |
+| `GET` | `/v1/identities/{identity_id}` | Public Discovery Document |
 | `GET` | `/v1/keys` | Capability-selected encryption key, or **gated** signing key (see §7.1) |
-| `GET` | `/v1/mailboxes/{mailbox}/resources` | List managed resources (auth; visibility-filtered) |
-| `GET` | `/v1/mailboxes/{mailbox}/resources/{resourceType}` | Get resources of a type |
-| `POST` | `/v1/mailboxes/{mailbox}/resources` | Create a resource |
-| `PATCH` | `/v1/mailboxes/{mailbox}/resources/{resourceId}` | JSON Merge Patch (RFC 7396) |
-| `DELETE` | `/v1/mailboxes/{mailbox}/resources/{resourceId}` | Delete or retire a resource |
-| `POST` | `/v1/mailboxes/{mailbox}/operations` | Execute an operation |
-| `POST` | `/v1/mailboxes/{mailbox}/challenges` | Create a challenge |
-| `POST` | `/v1/mailboxes/{mailbox}/challenges/{challengeId}/responses` | Respond to a challenge |
-| `GET` | `/v1/mailboxes/{mailbox}/challenges/{challengeId}` | Challenge status (no secrets) |
+| `GET` | `/v1/identities/{identity_id}/resources` | List managed resources (auth; visibility-filtered) |
+| `GET` | `/v1/identities/{identity_id}/resources/{resourceType}` | Get resources of a type |
+| `POST` | `/v1/identities/{identity_id}/resources` | Create a resource |
+| `PATCH` | `/v1/identities/{identity_id}/resources/{resourceId}` | JSON Merge Patch (RFC 7396) |
+| `DELETE` | `/v1/identities/{identity_id}/resources/{resourceId}` | Delete or retire a resource |
+| `POST` | `/v1/identities/{identity_id}/operations` | Execute an operation |
+| `POST` | `/v1/identities/{identity_id}/challenges` | Create a challenge |
+| `POST` | `/v1/identities/{identity_id}/challenges/{challengeId}/responses` | Respond to a challenge |
+| `GET` | `/v1/identities/{identity_id}/challenges/{challengeId}` | Challenge status (no secrets) |
 
 See [resources.md](resources.md), [operations.md](operations.md),
 [challenges.md](challenges.md), [authorization.md](authorization.md), and
@@ -91,15 +91,15 @@ See [resources.md](resources.md), [operations.md](operations.md),
 
 ## 7. Public mailbox GET
 
-`GET /v1/mailboxes/{mailbox}` returns a Discovery Document conforming to
+`GET /v1/identities/{identity_id}` returns a Discovery Document conforming to
 [`discovery.schema.json`](../schema/v1/discovery.schema.json).
 
-The document MUST include `schemaVersion` and `mailbox`. Public cryptographic
+The document MUST include `schemaVersion` and `identityId`. Public cryptographic
 material, preferences, forms, and extensions appear under `capabilities` and
 `extensions` as projected by the implementation.
 
 **Verification (signing) public key material MUST NOT appear** in this
-document. Serving signing keys requires `sha256` + `key_id` as specified in
+document. Serving signing keys requires `identity_id` + `key_id` as specified in
 [signing-key-lookup.md](signing-key-lookup.md). Encryption keys MAY still be
 projected for send-side discovery.
 
@@ -108,8 +108,8 @@ NOT appear in this response.
 
 ## 7.1 Gated signing key GET
 
-`GET /v1/keys?sha256={hex}&key_id={id}&purpose=signing` returns at most one
-signing artifact’s public material when both the mailbox hash and key-id
+`GET /v1/keys?identity_id={hex}&key_id={id}&purpose=signing` returns at most one
+signing artifact’s public material when both the directory identity and key-id
 match a published active signing key.
 
 Omitting `key_id` when `purpose` is `signing` (or `verification`) MUST fail.

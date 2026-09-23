@@ -1,26 +1,29 @@
 # Privacy considerations
 
-Discovery is associated with a mailbox. The act of **looking up** that mailbox can leak communication intent even when the resulting document is public.
+Discovery is associated with a mailbox. The directory lookup key is an OPRF
+identity, not the mailbox address.
 
-This is a protocol-level concern. It does not depend on a particular vendor.
+## Lookup
 
-## Lookup leakage
+The client blinds the canonical mailbox (RFC 9497 base OPRF,
+ristretto255-SHA512, mode `0x00`) and sends only the blinded element to
+`POST /v1/id/oprf/evaluate`. Finalize stays on the client. The directory
+stores and serves documents under `identity_id` (the leftmost 32 bytes of
+Finalize, lowercase hex).
 
-A resolver that receives a query can learn:
+A directory log can learn:
 
 ```text
-client X queried mailbox Y
+client X submitted a blinded element, then fetched identity_id Z
 ```
 
-possibly with timestamps, IP addresses, user agents, and repeat-query patterns. A centralized resolver makes this especially concentrated: one operator could observe large-scale social and business graphs.
+It does not learn the mailbox address from that exchange. The mailer, which
+sends mailbox OTP, is a separate host and is the component that sees the
+address.
 
-Even a distributed design can leak intent to:
-
-- authoritative DNS operators;
-- HTTPS well-known hosts;
-- mailbox providers;
-- CDNs and reverse proxies;
-- on-path network observers, if lookup is not protected.
+IP addresses, user agents, and repeat-query timing can still correlate a
+client. Caching repeated lookups reduces how often a client contacts the
+directory.
 
 ## Published document contents
 

@@ -29,7 +29,7 @@ Requires Node.js 20 or later.
 
 | File | Intent |
 | --- | --- |
-| [invalid/malformed-mailbox.json](invalid/malformed-mailbox.json) | `mailbox` is not an email address |
+| [invalid/malformed-mailbox.json](invalid/malformed-mailbox.json) | `identityId` is not 64 lowercase hex characters |
 | [invalid/schema-version-type.json](invalid/schema-version-type.json) | `schemaVersion` is not a string |
 | [invalid/extensions-not-object.json](invalid/extensions-not-object.json) | `extensions` is an array rather than a URI-keyed object |
 

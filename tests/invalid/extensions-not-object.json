@@ -1,6 +1,6 @@
 {
   "$schema": "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
   "schemaVersion": "1.0",
-  "mailbox": "alice@example.com",
+  "identityId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
   "extensions": []
 }

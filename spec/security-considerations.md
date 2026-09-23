@@ -26,12 +26,12 @@ Clients MUST use keys only for the role under which they were published, unless 
 
 Returning **all** (or an arbitrary “best”) **signing / verification** public
 keys for a mailbox to a caller that only knows the address — including via
-`GET /v1/mailboxes/{mailbox}` or `GET /v1/keys` without `key_id` — is a
+`GET /v1/identities/{identity_id}` or `GET /v1/keys` without `key_id` — is a
 **security breach** relative to signature verification:
 
 - Verifiers MUST bind to the **key-id of the key that signed the message**,
   not try every published signing key until one verifies.
-- Discovery services MUST require **both** `sha256(canonical mailbox)` and a
+- Discovery services MUST require **both** the directory `identity_id` and a
   **valid key-id** before returning signing public key material.
 
 See [signing-key-lookup.md](signing-key-lookup.md). SComm key-ids are
@@ -67,7 +67,7 @@ Resolvers, HTTP caches, DNS caches, and local client caches can be poisoned inde
 
 Discovery is mailbox-centric. If resolution can be pointed at the wrong mailbox's document, or if `mailbox` inside the document is not bound to the lookup key, clients may apply Alice's keys to Bob's address (or an attacker's).
 
-A future specification MUST bind the retrieved document to the mailbox that was queried. This draft only requires that documents *contain* a `mailbox` field; it does not yet say how that field is verified.
+A future specification MUST bind the retrieved document to the `identity_id` that was queried. Documents contain `identityId` and do not contain a mailbox address.
 
 ### Malicious extension data
 
@@ -117,7 +117,7 @@ Email OTP challenges MUST rate-limit creation, expire, bound attempts, and never
 
 ### Private / public visibility mistakes
 
-Private vault ciphertext, recovery envelopes, and device inventories MUST NOT be projected into `GET /v1/mailboxes/{mailbox}`.
+Private vault ciphertext, recovery envelopes, and device inventories MUST NOT be projected into `GET /v1/identities/{identity_id}`.
 
 ### Idempotency abuse
 
