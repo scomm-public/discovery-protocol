@@ -81,7 +81,7 @@ See [versioning.md](versioning.md). Implementations MUST NOT treat a core schema
 
 Discovery is conceptually associated with a mailbox. The Discovery Document identifies that mailbox in the `mailbox` field.
 
-This draft does not bind a mailbox to a single organizational domain model, vendor account, or provider API. How a client **finds which service origin** is authoritative for a mailbox is intentionally unspecified (see [§8](#8-future-resolution-specification)). Once an origin is known, [http-api.md](http-api.md) specifies `GET /v1/identities/{identity_id}`.
+This draft does not bind a mailbox to a single organizational domain model, vendor account, or provider API. How a client **finds which service origin** is authoritative for a mailbox is intentionally unspecified (see [§8](#8-future-resolution-specification)). Once an origin is known, [http-api.md](http-api.md) specifies `GET /v1/mailboxes/{mailboxSha256}`.
 
 ## 5. Discovery Document
 

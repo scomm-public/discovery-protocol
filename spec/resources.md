@@ -49,14 +49,14 @@ Requirements:
 
 | Visibility | Meaning |
 | --- | --- |
-| `public` | Eligible for projection into `GET /v1/identities/{identity_id}` |
+| `public` | Eligible for projection into `GET /v1/mailboxes/{mailboxSha256}` |
 | `private` | Authenticated management only; MUST NOT appear in the public document |
 
 Encrypted vault ciphertext, recovery envelopes, password-wrapped vault
 backups (`scomm-vault-export` hosted on the write host), and similar
 confidential material MUST use `private` (or dedicated non-Discovery APIs).
 They MUST NOT be published as public Discovery capabilities and MUST NOT
-appear on `GET /v1/identities/{identity_id}`.
+appear on `GET /v1/mailboxes/{mailboxSha256}`.
 
 ## 3. Public vs management representation
 
@@ -83,13 +83,13 @@ Encryption and verification MUST remain separate semantic roles.
 Create:
 
 ```http
-POST /v1/identities/{identity_id}/resources
+POST /v1/mailboxes/{mailboxSha256}/resources
 ```
 
 Partial update uses **JSON Merge Patch** (RFC 7396):
 
 ```http
-PATCH /v1/identities/{identity_id}/resources/{resourceId}
+PATCH /v1/mailboxes/{mailboxSha256}/resources/{resourceId}
 Content-Type: application/merge-patch+json
 ```
 

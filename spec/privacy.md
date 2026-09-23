@@ -1,33 +1,23 @@
 # Privacy considerations
 
-Discovery is associated with a mailbox. The directory lookup key is an OPRF
-identity, not the mailbox address.
+Discovery is associated with a mailbox. The directory lookup key is the
+unsalted SHA-256 of the canonical mailbox (`mailboxSha256`), not the
+address itself and not a vault OPRF identity.
 
 ## Lookup
 
-The client blinds the canonical mailbox (RFC 9497 base OPRF,
-ristretto255-SHA512, mode `0x00`) and sends only the blinded element to
-`POST /v1/id/oprf/evaluate`. Finalize stays on the client. The directory
-stores and serves documents under `identity_id` (the leftmost 32 bytes of
-Finalize, lowercase hex).
+The client hashes the canonical mailbox locally and fetches
+`GET /v1/mailboxes/{mailboxSha256}` or `GET /v1/keys?sha256=`. A directory
+log can learn that a client queried that digest. Anyone who can guess an
+address can compute the same digest. This is a public existence signal
+for published keys. It is not a vault capability.
 
-A directory log can learn:
-
-```text
-client X submitted a blinded element, then fetched identity_id Z
-```
-
-It does not learn the mailbox address from that exchange. The mailer, which
-sends mailbox OTP, is a separate host and is the component that sees the
-address.
-
-IP addresses, user agents, and repeat-query timing can still correlate a
-client. Caching repeated lookups reduces how often a client contacts the
-directory.
+The mailer, which sends mailbox OTP, is a separate host and is the
+component that sees the address on OTP request.
 
 ## Published document contents
 
-A Discovery Document can itself leak sensitive metadata: preferred languages, forms that imply a medical or legal context, security requirements, or organizational policies. Mailbox owners SHOULD treat published capabilities as public unless a future confidentiality mechanism exists (none is specified in this draft).
+A Discovery Document can itself leak sensitive metadata: preferred languages, forms that imply a medical or legal context, security requirements, or organizational policies. Mailbox owners SHOULD treat published capabilities as public unless a future confidentiality mechanism exists (none is specified in this draft). Documents contain `mailboxSha256` and MUST NOT contain a mailbox address.
 
 Private account state managed via authenticated APIs (encrypted vaults, recovery envelopes) MUST NOT be mirrored into the public Discovery Document. See [resources.md](resources.md) visibility rules and [http-api.md](http-api.md).
 

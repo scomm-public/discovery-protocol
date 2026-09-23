@@ -8,7 +8,7 @@ onto simple resource CRUD (for example MSK replacement).
 ## 1. Endpoint
 
 ```http
-POST /v1/identities/{identity_id}/operations
+POST /v1/mailboxes/{mailboxSha256}/operations
 ```
 
 ## 2. Operation envelope

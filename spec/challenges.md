@@ -14,7 +14,7 @@ WebAuthn, existing-device approval, or out-of-band approval.
 Create:
 
 ```http
-POST /v1/identities/{identity_id}/challenges
+POST /v1/mailboxes/{mailboxSha256}/challenges
 ```
 
 ```json
@@ -40,7 +40,7 @@ Response (secrets MUST NOT be included):
 Respond:
 
 ```http
-POST /v1/identities/{identity_id}/challenges/{challengeId}/responses
+POST /v1/mailboxes/{mailboxSha256}/challenges/{challengeId}/responses
 ```
 
 ```json
@@ -57,7 +57,7 @@ profile. They are not 6-digit authenticator TOTP codes.
 Status:
 
 ```http
-GET /v1/identities/{identity_id}/challenges/{challengeId}
+GET /v1/mailboxes/{mailboxSha256}/challenges/{challengeId}
 ```
 
 ## 2. Binding requirements

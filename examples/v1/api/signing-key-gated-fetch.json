@@ -1,10 +1,10 @@
 {
-  "description": "Gated signing-key fetch requires identity_id and key_id (SComm display form XXXX-XXXX or publisher-chosen id).",
+  "description": "Gated signing-key fetch requires sha256 of the canonical mailbox and key_id (SComm display form XXXX-XXXX or publisher-chosen id).",
   "request": {
     "method": "GET",
     "path": "/v1/keys",
     "query": {
-      "identity_id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "key_id": "A1B2-C3D4",
       "purpose": "signing"
     }

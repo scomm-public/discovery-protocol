@@ -3,10 +3,10 @@
   "$id": "https://discovery.scomm.ai/schema/v1/discovery.schema.json",
   "$comment": "Provisional canonical identifier. Hosting at this URL is not required for validation and is not a resolution protocol. Core schema series 1.x; this file describes version 1.0.",
   "title": "Discovery Document",
-  "description": "Extensible machine-readable information published for an identity. Clients obtain this document by identity_id and interpret the capabilities they understand. Encryption and verification keys are optional capabilities, not the protocol itself. The document does not contain a mailbox address.",
+  "description": "Extensible machine-readable information published for a mailbox directory entry. Clients obtain this document by mailboxSha256 (SHA-256 of the canonical mailbox) and interpret the capabilities they understand. The document does not contain a mailbox address. Vault identity is out of scope.",
   "type": "object",
   "additionalProperties": true,
-  "required": ["schemaVersion", "identityId"],
+  "required": ["schemaVersion", "mailboxSha256"],
   "properties": {
     "$schema": {
       "description": "Optional JSON Schema identifier for this document. Values under https://discovery.scomm.ai/schema/ are provisional canonical identifiers.",
@@ -18,8 +18,8 @@
       "type": "string",
       "const": "1.0"
     },
-    "identityId": {
-      "description": "Directory identity. 64 lowercase hex characters: the leftmost 32 bytes of RFC 9497 base OPRF Finalize (ristretto255-SHA512, mode 0x00) over the canonical mailbox. The mailbox address is not in this document.",
+    "mailboxSha256": {
+      "description": "Unsalted SHA-256 of the UTF-8 canonical mailbox, lowercase hex (64 characters). Public directory locator. Not a vault capability.",
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
       "minLength": 64,

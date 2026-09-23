@@ -14,7 +14,7 @@ That breaks signature–issuer binding and over-discloses signing material.
 A Discovery service (including `discovery.scomm.ai`) MUST serve **signing /
 verification public key material** only when the caller presents **both**:
 
-1. the directory **identity_id** (64 lowercase hex characters), and  
+1. **mailboxSha256** (SHA-256 of the canonical mailbox, 64 hex), and  
 2. a **valid key-id** for a published signing artifact.
 
 Otherwise the service MUST respond as if no key exists (same error class as
@@ -54,12 +54,12 @@ exact normalized equality against the id stored with the artifact.
 
 | Query | Required |
 | --- | --- |
-| `identity_id` | Yes — 64 lowercase hex directory identity |
+| `sha256` | Yes — mailboxSha256, 64 lowercase hex |
 | `key_id` | Yes — SComm `xxxx-xxxx` or publisher-chosen id |
 | `purpose` | `signing` (or accepted synonym) |
 | `capabilities` | Optional for signing fetch (may be ignored when `key_id` binds the artifact) |
 
-`GET /v1/identities/{identity_id}` MUST NOT project verification public key
+`GET /v1/mailboxes/{mailboxSha256}` MUST NOT project verification public key
 material into `capabilities.crypto.verification`. Encryption keys MAY still
 appear for send-side discovery.
 
@@ -68,7 +68,7 @@ appear for send-side discovery.
 1. Detect `multipart/signed`.
 2. Read `X-Scomm-Signing-Key-Id`, or a publisher-specific issuer id from the
    signature when that id was registered on the service.
-3. `GET /v1/keys?identity_id=…&key_id=…&purpose=signing`.
+3. `GET /v1/keys?sha256=…&key_id=…&purpose=signing`.
 4. Verify locally against the returned material only.
 
 Address-book import of third-party keys (when the sender does not publish on
