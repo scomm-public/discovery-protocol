@@ -12,8 +12,14 @@ log can learn that a client queried that digest. Anyone who can guess an
 address can compute the same digest. This is a public existence signal
 for published keys. It is not a vault capability.
 
-The mailer, which sends mailbox OTP, is a separate host and is the
-component that sees the address on OTP request.
+The mailer, which sends mailbox OTP, runs on the directory origin and is the
+component that sees the address on OTP request. Vault OTP purposes
+(`vault_open`, `recovery_envelope`, `recovery_generation`, `vault_backup`)
+are sent only when that directory already has an armed MSK for the mailbox
+hash. The verify response for those purposes is a signed grant. The grant
+carries `purpose`, `identity_id`, `msk_fingerprint`, `exp`, and `jti`. It
+does not carry the mailbox address or `mailboxSha256`. Vault verifies the
+grant and does not call the directory.
 
 ## Published document contents
 

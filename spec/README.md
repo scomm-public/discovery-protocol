@@ -15,6 +15,7 @@ These documents define the Discovery Protocol independently of any hosted servic
 | [security-considerations.md](security-considerations.md) | Attacks, authenticity, and open cryptographic design questions |
 | [signing-key-lookup.md](signing-key-lookup.md) | Gated signing-key fetch (`sha256` + `key_id`); SComm `xxxx-xxxx` ids |
 | [privacy.md](privacy.md) | Lookup leakage and privacy-preserving resolution as future work |
+| [otp-grants.md](otp-grants.md) | Mailer OTP purposes and vault grants |
 
 JSON Schemas in [`../schema/v1`](../schema/v1) are the normative structural definition of Discovery Documents for core schema series `1.x` as currently drafted.
 

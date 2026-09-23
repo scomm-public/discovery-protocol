@@ -64,7 +64,7 @@ returned to the client. The proof MUST remain purpose-bound.
 
 | Action | Typical auth |
 | --- | --- |
-| Publish preferences / public keys / vault upload | MSK |
+| Publish preferences / public keys | MSK |
 | Replace MSK when key is lost | Challenge (email OTP) + new MSK PoP |
 | Arm first MSK | Challenge (email OTP) + MSK PoP |
 

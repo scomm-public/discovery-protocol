@@ -40,9 +40,20 @@ all resource types share one schema version forever.
 
 ## 3. Hosts
 
-A deployment MAY split **read** and **write** hosts (for example a public CDN
-read tier and an authenticated write tier). The logical paths are identical;
-only the origin differs.
+Directory and mailer share one origin. Vault is a different origin and is not
+part of this document.
+
+| Mode | Directory and mailer | Vault |
+| --- | --- | --- |
+| Debug | `http://127.0.0.1:3000` | `http://127.0.0.1:3001` |
+| Production | `https://discovery.scomm.ai` | `https://vault.scomm.ai` |
+
+`GET /v1/keys` and `GET /v1/mailboxes/{mailboxSha256}` are served by the
+directory origin. `POST /v1/otp/request` and `POST /v1/otp/verify` are served
+by that same origin. Vault routes are not mounted there.
+
+A deployment MAY still split directory read and write tiers. The logical
+directory paths stay the same; only the directory origin differs.
 
 Typical mapping:
 

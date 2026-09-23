@@ -54,7 +54,7 @@ Only operations needed for current hosted behavior:
 | --- | --- | --- |
 | `https://discovery.scomm.ai/operations/msk/enroll/v1` | `enroll_msk` / `arm_msk` | challenge + MSK PoP |
 | `https://discovery.scomm.ai/operations/msk/replace/v1` | `replace_msk` / `arm_replacement_msk` | challenge + MSK PoP |
-| Existing mutate tokens (`set_keys`, `vault_upload`, …) | same | MSK |
+| `set_keys`, `set_signing_key`, `set_encryption_key`, `retire_key`, `update_preferences` | same | MSK |
 
 Do not add speculative operations that have no current server behavior.
 
