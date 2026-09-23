@@ -45,11 +45,14 @@ exp=<unix ms>
 jti=<opaque>
 ```
 
-`identity_id` is the OPRF identity. The directory mailer learns it by blinding
-the canonical mailbox and calling vault `POST /v1/id/oprf/evaluate`. The OPRF
-secret stays on vault. The token does not contain the mailbox address or
-`mailboxSha256`. Vault checks the signature, purpose, expiry, and `jti`, and
-requires the presented MSK to match `msk_fingerprint`.
+`identity_id` is the OPRF identity. The directory mailer learns it only for a
+vault-consumed purpose, by blinding the canonical mailbox and calling vault
+`POST /v1/id/oprf/evaluate`. The OPRF secret stays on vault. The token does
+not contain the mailbox address or `mailboxSha256`. Vault checks the
+signature, purpose, expiry, and `jti`, and requires the presented MSK to
+match `msk_fingerprint`.
 
-Directory `enroll` and `replace_msk` grants are opaque tokens inside the
-directory process. They are bound to `sha256`, not to `identity_id`.
+Directory `enroll` does not call the vault. Its verify response is
+`otp_grant` and `sha256` only. Directory `enroll` and `replace_msk` grants
+are opaque tokens inside the directory process. They are bound to `sha256`,
+not to `identity_id`.
