@@ -11,8 +11,12 @@
       "description": "Keys and hints intended for encrypting to this mailbox. Do not use these keys for signature verification unless a future family profile explicitly allows dual use.",
       "$ref": "#/$defs/keySet"
     },
+    "signing": {
+      "description": "Public signing keys for this mailbox. Clients MAY display or select these to learn who signs. Clients MUST NOT verify a message by trying every key in this list. Verification fetch is purpose=verification plus key_id.",
+      "$ref": "#/$defs/keySet"
+    },
     "verification": {
-      "description": "Keys and hints intended for verifying signatures attributed to this mailbox. Do not use these keys for encryption unless a future family profile explicitly allows dual use.",
+      "description": "Not projected on the public Discovery Document. Verification material is fetched with GET /v1/keys purpose=verification and a key_id. Do not use these keys for encryption unless a future family profile explicitly allows dual use.",
       "$ref": "#/$defs/keySet"
     }
   },

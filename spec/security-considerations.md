@@ -22,17 +22,18 @@ Encryption and verification are separate roles. An attacker may try to:
 
 Clients MUST use keys only for the role under which they were published, unless a later crypto profile defines a safe dual-use rule.
 
-### Unbound signing-key disclosure (forbidden)
+### Unbound verification (forbidden)
 
-Returning **all** (or an arbitrary “best”) **signing / verification** public
-keys for a mailbox to a caller that only knows the address — including via
-`GET /v1/mailboxes/{mailboxSha256}` or `GET /v1/keys` without `key_id` — is a
-**security breach** relative to signature verification:
+Publishing signing keys so clients can see who signs for a mailbox is allowed.
+Using that list to verify a message is not.
 
 - Verifiers MUST bind to the **key-id of the key that signed the message**,
   not try every published signing key until one verifies.
 - Discovery services MUST require **both** mailboxSha256 and a
-  **valid key-id** before returning signing public key material.
+  **valid key-id** before returning material for `purpose=verification`.
+- `GET /v1/mailboxes/{mailboxSha256}` MUST NOT project
+  `capabilities.crypto.verification`. It MAY project
+  `capabilities.crypto.signing`.
 
 See [signing-key-lookup.md](signing-key-lookup.md). SComm key-ids are
 content-addressable (`xxxx-xxxx` from the first 32 bits of

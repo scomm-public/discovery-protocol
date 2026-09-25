@@ -106,22 +106,27 @@ The document MUST include `schemaVersion` and `mailboxSha256`. Public cryptograp
 material, preferences, forms, and extensions appear under `capabilities` and
 `extensions` as projected by the implementation.
 
-**Verification (signing) public key material MUST NOT appear** in this
-document. Serving signing keys requires `sha256` + `key_id` as specified in
-[signing-key-lookup.md](signing-key-lookup.md). Encryption keys MAY still be
-projected for send-side discovery.
+**Verification public key material MUST NOT appear** in this document.
+Signing keys MAY appear under `capabilities.crypto.signing`, and encryption
+keys MAY appear under `capabilities.crypto.encryption`. Gated verification
+fetch is specified in [signing-key-lookup.md](signing-key-lookup.md).
 
 Private account state (encrypted vaults, recovery envelopes, device lists) MUST
 NOT appear in this response.
 
-## 7.1 Gated signing key GET
+## 7.1 Signing discovery and gated verification GET
 
-`GET /v1/keys?sha256={hex}&key_id={id}&purpose=signing` returns at most one
-signing artifact’s public material when both the directory identity and key-id
-match a published active signing key.
+`GET /v1/keys?sha256={hex}&purpose=signing` selects a published signing key
+by capability negotiation. `key_id` is optional. When present, the response
+is that signing artifact if it is active for the mailbox.
 
-Omitting `key_id` when `purpose` is `signing` (or `verification`) MUST fail.
-Encryption-purpose selection without `key_id` MAY remain capability-based.
+`GET /v1/keys?sha256={hex}&key_id={id}&purpose=verification` returns at most
+one signing artifact’s public material when both the directory identity and
+key-id match. Omitting `key_id` when `purpose` is `verification` MUST fail.
+
+`purpose=signing` and `purpose=verification` are not synonyms.
+Encryption-purpose selection without `key_id` remains capability-based, as
+does signing-purpose selection without `key_id`.
 
 ## 8. Errors
 
