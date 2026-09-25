@@ -82,7 +82,7 @@ capability. Vault OPRF identity is specified outside this document.
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/v1/mailboxes/{mailboxSha256}` | Public Discovery Document |
-| `GET` | `/v1/keys` | Capability-selected encryption key, or **gated** signing key (see §7.1) |
+| `GET` | `/v1/keys` | Capability-selected encryption key, or **gated** verify key (see §7.1) |
 | `GET` | `/v1/mailboxes/{mailboxSha256}/resources` | List managed resources (auth; visibility-filtered) |
 | `GET` | `/v1/mailboxes/{mailboxSha256}/resources/{resourceType}` | Get resources of a type |
 | `POST` | `/v1/mailboxes/{mailboxSha256}/resources` | Create a resource |
@@ -117,11 +117,12 @@ NOT appear in this response.
 ## 7.1 Verification key GET
 
 `GET /v1/keys` with `purpose=signing` MUST fail. Signing keys are private
-and are not served by Discovery.
+and are not served by Discovery. The public purpose is `verify`.
 
-`GET /v1/keys?sha256={hex}&key_id={id}&purpose=verification` returns at most
-one verification public key when both the directory identity and key-id
-match. Omitting `key_id` when `purpose` is `verification` MUST fail.
+`GET /v1/keys?sha256={hex}&key_id={id}&purpose=verify` returns at most
+one verify public key when both the unsalted mailbox hash and key-id
+match. `{hex}` is `SHA-256(UTF-8(canonical mailbox))`, not a vault OPRF
+identity. Omitting `key_id` when `purpose` is `verify` MUST fail.
 
 Encryption-purpose selection without `key_id` remains capability-based.
 

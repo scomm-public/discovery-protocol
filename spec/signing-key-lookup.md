@@ -17,16 +17,19 @@ for a specific signature.
 
 `GET /v1/keys` with `purpose=signing` MUST fail. A signing key is not
 selected by capability negotiation and is not fetched with `key_id`.
+The discovery purpose is `verify`.
 
 Clients MUST NOT upload a signing private key to the directory. Vault
 upload carries the encrypted container only.
 
-## 2. Verification keys (gated)
+## 2. Verify keys (gated)
 
-`GET /v1/keys` with `purpose=verification` MUST require both:
+`GET /v1/keys` with `purpose=verify` MUST require both:
 
-1. **mailboxSha256** (SHA-256 of the canonical mailbox, 64 hex), and
-2. a **valid key-id** for the published verification material of the key
+1. **mailboxSha256** — unsalted SHA-256 of the canonical mailbox, 64 hex.
+   This is not the vault OPRF identity. Salted identity is a vault
+   locator only.
+2. a **valid key-id** for the published verify material of the key
    that signed the message.
 
 Otherwise the service MUST respond as if no key exists (HTTP `400` when
@@ -66,9 +69,9 @@ equality against the id stored with the artifact.
 
 ## 4. HTTP
 
-| Query | `purpose=signing` | `purpose=verification` |
+| Query | `purpose=signing` | `purpose=verify` |
 | --- | --- | --- |
-| `sha256` | Request MUST fail | Required |
+| `sha256` | Request MUST fail | Required — unsalted mailbox hash |
 | `key_id` | Not used | Required — SComm `xxxx-xxxx` or publisher-chosen id |
 | `capabilities` | Not used | Ignored when `key_id` binds the artifact |
 
@@ -77,8 +80,9 @@ equality against the id stored with the artifact.
 1. Detect `multipart/signed`.
 2. Read `X-Scomm-Signing-Key-Id`, or a publisher-specific issuer id from the
    signature when that id was registered on the service.
-3. `GET /v1/keys?sha256=…&key_id=…&purpose=verification`.
+3. `GET /v1/keys?sha256=…&key_id=…&purpose=verify`, where `sha256` is the
+   unsalted mailbox hash.
 4. Verify locally against the returned public material only.
 
-Do not call `purpose=signing`. Do not fall back to an unbound key list when
-the header is missing.
+Do not call `purpose=signing`. Do not use the vault OPRF identity as
+`sha256`. Do not fall back to an unbound key list when the header is missing.

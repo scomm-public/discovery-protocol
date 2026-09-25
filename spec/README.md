@@ -13,7 +13,7 @@ These documents define the Discovery Protocol independently of any hosted servic
 | [versioning.md](versioning.md) | Protocol vs HTTP API vs core schema vs extension versions |
 | [extensions.md](extensions.md) | URI-namespaced third-party capabilities |
 | [security-considerations.md](security-considerations.md) | Attacks, authenticity, and open cryptographic design questions |
-| [signing-key-lookup.md](signing-key-lookup.md) | Signing keys stay on the device or in the vault; verification fetch is `sha256` + `key_id` |
+| [signing-key-lookup.md](signing-key-lookup.md) | Signing keys stay on the device or in the vault; verify fetch is unsalted `sha256` + `key_id` + `purpose=verify` |
 | [privacy.md](privacy.md) | Lookup leakage and privacy-preserving resolution as future work |
 | [otp-grants.md](otp-grants.md) | Mailer OTP purposes and vault grants |
 

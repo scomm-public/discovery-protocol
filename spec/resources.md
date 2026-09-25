@@ -73,7 +73,7 @@ Provisional type URIs (identifiers, not necessarily dereferenceable):
 | Type URI | Visibility | Projects to |
 | --- | --- | --- |
 | `https://discovery.scomm.ai/types/crypto/encryption-key/v1` | public | `capabilities.crypto.encryption` |
-| `https://discovery.scomm.ai/types/crypto/verification-key/v1` | gated | not projected; `GET /v1/keys?purpose=verification` requires `key_id` |
+| `https://discovery.scomm.ai/types/crypto/verification-key/v1` | gated | not projected; `GET /v1/keys?purpose=verify` requires unsalted `sha256` and `key_id` |
 | `https://discovery.scomm.ai/types/preferences/languages/v1` | public | `capabilities.preferences.languages` |
 
 Encryption and verification MUST remain separate semantic roles.

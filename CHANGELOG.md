@@ -16,9 +16,10 @@ The specification is experimental. No stable protocol or schema release has been
 - Wire schemas under `schema/v1/api/`, `schema/v1/operations/`, `schema/v1/challenges/`.
 - API examples and SComm MSK signing test vectors under `examples/v1/api/`.
 - [signing-key-lookup.md](spec/signing-key-lookup.md): a signing key is
-  private and is not a discovery resource. Verification fetch
-  (`purpose=verification`) requires `sha256` + `key_id`. `purpose=signing`
-  MUST fail. SComm content-addressable `xxxx-xxxx` key-ids are unchanged.
+  private and is not a discovery resource. Verify fetch
+  (`purpose=verify`) requires the unsalted mailbox `sha256` + `key_id`.
+  `purpose=signing` MUST fail. The vault OPRF identity is not the
+  discovery locator. SComm content-addressable `xxxx-xxxx` key-ids are unchanged.
 
 ### Changed
 
@@ -27,7 +28,7 @@ The specification is experimental. No stable protocol or schema release has been
 - Versioning distinguishes protocol, HTTP `/v1/`, document schema, and per-type schemas.
 - Public Discovery Documents MUST NOT project signing keys or
   `capabilities.crypto.verification`. `purpose=signing` is rejected.
-  `purpose=verification` stays key-id gated.
+  `purpose=verify` stays key-id gated on the unsalted mailbox hash.
 
 ### Added (earlier)
 

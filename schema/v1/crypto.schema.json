@@ -12,7 +12,7 @@
       "$ref": "#/$defs/keySet"
     },
     "verification": {
-      "description": "Not projected on the public Discovery Document. Verification material is fetched with GET /v1/keys purpose=verification and a key_id. Signing private keys are not a discovery capability. Do not use verification keys for encryption unless a future family profile explicitly allows dual use.",
+      "description": "Not projected on the public Discovery Document. Verify material is fetched with GET /v1/keys purpose=verify, the unsalted mailbox sha256, and a key_id. Signing private keys are not a discovery capability. The vault OPRF identity is not this locator. Do not use verify keys for encryption unless a future family profile explicitly allows dual use.",
       "$ref": "#/$defs/keySet"
     }
   },

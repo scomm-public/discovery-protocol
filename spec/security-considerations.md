@@ -29,9 +29,11 @@ halves used to verify signatures, lets a caller try keys until one succeeds.
 
 - Signing private keys MUST stay on the device or inside the encrypted vault.
   Discovery MUST NOT store or return them. `purpose=signing` MUST fail.
+  The discovery purpose is `verify`.
 - Verifiers MUST bind to the **key-id of the key that signed the message**.
-- Discovery services MUST require **both** mailboxSha256 and a
-  **valid key-id** before returning material for `purpose=verification`.
+- Discovery services MUST require **both** the unsalted mailboxSha256 and a
+  **valid key-id** before returning material for `purpose=verify`.
+  The vault OPRF identity MUST NOT be used as this locator.
 - `GET /v1/mailboxes/{mailboxSha256}` MUST NOT project
   `capabilities.crypto.signing` or `capabilities.crypto.verification`.
 
