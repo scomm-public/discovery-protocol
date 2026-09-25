@@ -1,5 +1,5 @@
 {
-  "description": "Gated verification-key fetch requires sha256 of the canonical mailbox and key_id (SComm display form XXXX-XXXX or publisher-chosen id). purpose=signing does not require key_id.",
+  "description": "Gated verification-key fetch requires sha256 of the canonical mailbox and key_id (SComm display form XXXX-XXXX or publisher-chosen id). purpose=signing is rejected; signing keys are not served by Discovery.",
   "request": {
     "method": "GET",
     "path": "/v1/keys",
