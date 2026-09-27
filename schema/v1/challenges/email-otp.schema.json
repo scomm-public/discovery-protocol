@@ -4,7 +4,7 @@
   "title": "Email OTP challenge create request",
   "type": "object",
   "additionalProperties": false,
-  "required": ["type", "purpose"],
+  "required": ["type", "purpose", "email"],
   "properties": {
     "type": {
       "type": "string",
@@ -14,6 +14,12 @@
       "type": "string",
       "format": "uri",
       "description": "Operation or recovery purpose this challenge authorizes when satisfied"
+    },
+    "email": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 320,
+      "description": "Mailbox to send the code to. Its canonical SHA-256 MUST equal the path mailboxSha256. Not stored."
     },
     "schemaVersion": {
       "type": "string",

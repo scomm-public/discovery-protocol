@@ -46,6 +46,25 @@ origin and `identity_id` set to the OPRF identity. `replace_msk` returns both
 so the client can arm the new MSK in the directory and then rebind the vault
 to the same key.
 
+### 2.1 Arming in one call
+
+There is no pending MSK state. The client redeems a directory grant in a
+single request that carries the grant, the MSK, and a proof signed by that MSK:
+
+| Route | Grant purpose | Proof operation |
+| --- | --- | --- |
+| `POST /v1/msk/arm` | `enroll` | `arm_msk` |
+| `POST /v1/msk/replace/arm` | `replace_msk` | `arm_replacement_msk` |
+
+Body: `{ "identity_id", "otp_grant", "msk": { "algorithm", "public_key" }, "msk_proof" }`.
+The server verifies the proof before spending the grant, then requires
+SHA-256 of `msk.public_key` to equal the grant's `msk_fingerprint`. Arming is
+atomic: `/v1/msk/arm` fails with `409` if an MSK is already armed;
+`/v1/msk/replace/arm` fails with `404` if none is armed and `409
+master_key_unchanged` if the key is the same. Older two-step routes that stored
+a candidate first (`POST /v1/msk/enroll`, `POST /v1/msk/replace`) answer
+`410 single_call_arm_required`.
+
 ## 3. Grant format
 
 The signed text is ASCII. The first line is the header. Each following line is

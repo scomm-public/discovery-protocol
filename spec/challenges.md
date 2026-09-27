@@ -22,11 +22,14 @@ POST /v1/mailboxes/{mailboxSha256}/challenges
 ```json
 {
   "type": "https://discovery.scomm.ai/challenges/email-otp/v1",
-  "purpose": "https://discovery.scomm.ai/operations/msk/replace/v1"
+  "purpose": "https://discovery.scomm.ai/operations/msk/replace/v1",
+  "email": "alice@example.com",
+  "msk_jkt": "ERERERERERERERERERERERERERERERERERERERERERE"
 }
 ```
 
-Response (secrets MUST NOT be included):
+Response (secrets MUST NOT be included). The response is the same whether or
+not a message was sent:
 
 ```json
 {
@@ -56,6 +59,23 @@ POST /v1/mailboxes/{mailboxSha256}/challenges/{challengeId}/responses
 Mailbox OTP codes are **11-character Base62** (`0-9A-Za-z`) in the SComm hosted
 profile. They are not 6-digit authenticator TOTP codes.
 
+A successful response returns `status: "satisfied"` plus the grants of
+[otp-grants.md §2](otp-grants.md#2-purposes): `otp_grant`, and `sha256` for
+directory purposes or `identity_id` for vault purposes. `replace_msk` also
+returns `vault_grant`. A failed code decrements `attemptsRemaining`; at zero
+the response is `429 challenge_failed`.
+
+Purpose URIs:
+
+| Purpose URI | Grant purpose |
+| --- | --- |
+| `https://discovery.scomm.ai/operations/msk/enroll/v1` | `enroll` |
+| `https://discovery.scomm.ai/operations/msk/replace/v1` | `replace_msk` |
+| `https://discovery.scomm.ai/operations/vault/open/v1` | `vault_open` |
+| `https://discovery.scomm.ai/operations/vault/backup-fetch/v1` | `vault_backup` |
+| `https://discovery.scomm.ai/operations/recovery/envelope-fetch/v1` | `recovery_envelope` |
+| `https://discovery.scomm.ai/operations/recovery/generation/v1` | `recovery_generation` |
+
 Status:
 
 ```http
@@ -84,6 +104,11 @@ A satisfied challenge for MSK replace MUST NOT authorize unrelated operations
 Schema: [`challenges/email-otp.schema.json`](../schema/v1/challenges/email-otp.schema.json).
 
 Type URI: `https://discovery.scomm.ai/challenges/email-otp/v1`
+
+The create request carries `email`, the address to send the code to. The
+server MUST check that its canonical SHA-256 equals `{mailboxSha256}`
+(`403 mailbox_mismatch` otherwise) and MUST NOT store the address. This is the
+only discovery request body allowed to contain a mailbox address.
 
 Servers MUST rate-limit creation, expire codes, and bound verify attempts.
 Raw OTP values MUST NOT be stored in plaintext; store only a salted hash (or

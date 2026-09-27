@@ -30,6 +30,28 @@
     "attemptsRemaining": {
       "type": "integer",
       "minimum": 0
+    },
+    "nonce": {
+      "type": "string",
+      "description": "oidc-id-token create only: the nonce the ID token must carry"
+    },
+    "otp_grant": {
+      "type": "string",
+      "description": "Respond only: the grant for the purpose (otp-grants.md)"
+    },
+    "vault_grant": {
+      "type": "string",
+      "description": "Respond only, replace_msk: signed vault-audience grant"
+    },
+    "identity_id": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Respond only, vault purposes: OPRF identity"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "Respond only, directory purposes: mailbox hash"
     }
   }
 }
