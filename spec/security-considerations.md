@@ -68,7 +68,7 @@ Resolvers, HTTP caches, DNS caches, and local client caches can be poisoned inde
 
 ### Mailbox impersonation
 
-Discovery is mailbox-centric. If resolution can be pointed at the wrong mailbox's document, or if `mailbox` inside the document is not bound to the lookup key, clients may apply Alice's keys to Bob's address (or an attacker's).
+Discovery is mailbox-centric. If resolution can be pointed at the wrong mailbox's document, or if `mailboxSha256` inside the document is not bound to the lookup key, clients may apply Alice's keys to Bob's address (or an attacker's).
 
 A future specification MUST bind the retrieved document to the mailboxSha256 that was queried. Documents contain `mailboxSha256` and do not contain a mailbox address.
 

@@ -75,14 +75,46 @@ equality against the id stored with the artifact.
 | `key_id` | Not used | Required — SComm `xxxx-xxxx` or publisher-chosen id |
 | `capabilities` | Not used | Ignored when `key_id` binds the artifact |
 
-## 5. Client verify path
+## 5. Retention and status
+
+A signature outlives the key that made it. Old mail must stay verifiable
+after the signer rotates.
+
+- Rotation does not delete verify material. The server marks the old
+  artifact retired and records `retired_at`.
+- Retired verify material MUST remain fetchable by `key_id` for at least
+  10 years after `retired_at`. After that a purge job MAY delete it.
+- A key reported as compromised is marked `revoked` with `revoked_at`. Its
+  material stays fetchable so clients can show why a signature is not
+  trusted.
+
+The response includes the status so clients can judge old signatures:
+
+| Member | Meaning |
+| --- | --- |
+| `status` | `active`, `retired`, or `revoked` |
+| `created_at` | ISO 8601 time the key was published |
+| `retired_at` | Present when `status` is `retired` or `revoked` |
+| `revoked_at` | Present when `status` is `revoked` |
+
+A client SHOULD accept a signature from a `retired` key when the message date
+is before `retired_at`. A client SHOULD warn on any signature from a
+`revoked` key made after `revoked_at`, and MAY warn on all of them.
+
+Encryption and key-agreement keys are different: once superseded, their
+public material is removed from the directory. Only `key_id`, family,
+algorithm, fingerprint, and dates remain, so nobody encrypts to a retired
+key.
+
+## 6. Client verify path
 
 1. Detect `multipart/signed`.
 2. Read `X-Scomm-Signing-Key-Id`, or a publisher-specific issuer id from the
    signature when that id was registered on the service.
 3. `GET /v1/keys?sha256=…&key_id=…&purpose=verify`, where `sha256` is the
    unsalted mailbox hash.
-4. Verify locally against the returned public material only.
+4. Verify locally against the returned public material only, then apply the
+   `status` rules of §5.
 
 Do not call `purpose=signing`. Do not use the vault OPRF identity as
 `sha256`. Do not fall back to an unbound key list when the header is missing.

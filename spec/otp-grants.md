@@ -1,58 +1,118 @@
-# Mailer OTP grants
+# Mailbox grants
 
-The directory origin serves mailbox OTP. Vault is a different origin
-(`https://vault.scomm.ai`, debug `http://127.0.0.1:3001`) and does not send mail.
+**Protocol version:** `0.2-draft`
 
-## Request and verify
+The directory origin proves mailbox control and signs a short-lived grant.
+Vault is a different origin (`https://vault.scomm.ai`, debug
+`http://127.0.0.1:3001`) and does not send mail.
 
-`POST /v1/otp/request` body is `{ "email", "purpose" }`. The response is a
-uniform `202`. The address is not stored as a directory row.
+Two challenge types produce a grant: email OTP and OIDC ID token
+([challenges.md](challenges.md)). Both produce the same grant format.
+
+## 1. Request and verify (email OTP)
+
+`POST /v1/otp/request` body is `{ "email", "purpose", "msk_jkt" }`. The
+response is a uniform `202`. The address is not stored as a directory row.
+`msk_jkt` is required for `enroll` and `replace_msk` and ignored otherwise.
 
 `POST /v1/otp/verify` body is `{ "sha256", "otp", "purpose" }`. `sha256` is
 the unsalted SHA-256 of the canonical mailbox. The response does not contain
 an email address.
 
-## Purposes
+These two routes are aliases for the `email-otp/v1` challenge type on
+`POST /v1/mailboxes/{mailboxSha256}/challenges` and remain for one SDK minor
+version after the challenge route ships.
 
-| Purpose | Who consumes the grant | Mail is sent when |
-| --- | --- | --- |
-| `enroll` | Directory | The address is deliverable |
-| `replace_msk` | Directory, then a vault rebind | An armed directory MSK exists for `sha256` |
-| `vault_open` | Vault | An armed directory MSK exists for `sha256` |
-| `recovery_envelope` | Vault | An armed directory MSK exists for `sha256` |
-| `recovery_generation` | Vault | An armed directory MSK exists for `sha256` |
-| `vault_backup` | Vault | An armed directory MSK exists for `sha256` |
+## 2. Purposes
+
+| Purpose | Verify returns | Mail is sent when | `msk_fingerprint` |
+| --- | --- | --- | --- |
+| `enroll` | `otp_grant` (directory) | The address is deliverable | MSK being armed (from `msk_jkt`) |
+| `replace_msk` | `otp_grant` (directory) and `vault_grant` | An armed directory MSK exists | replacement MSK (from `msk_jkt`) |
+| `vault_open` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
+| `recovery_envelope` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
+| `recovery_generation` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
+| `vault_backup` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
 
 If a vault purpose has no armed directory MSK, the request still returns `202`
-and no message is sent.
+and no message is sent. The ID-token path returns `409 master_key_not_armed`
+because the caller has already proven control of the mailbox.
 
-## Vault grant
+A directory grant is an opaque single-use token held by the directory. It is
+bound to `sha256`, purpose, and `msk_fingerprint`, and it never leaves the
+directory's trust boundary except as a bearer string returned to the client.
+A vault grant is the signed token of §3 with `aud` containing the vault
+origin and `identity_id` set to the OPRF identity. `replace_msk` returns both
+so the client can arm the new MSK in the directory and then rebind the vault
+to the same key.
 
-The directory mailer signs vault-consumed grants. The token format, `jti`
-replay, and the vault routes that consume the grant are specified by CKVF
-([vault host](https://github.com/scomm-public/ckvf/blob/main/specification/profiles/vault-host.md)).
-This document only requires that the mailer produce that grant and that the
-grant not contain a mailbox address or `mailboxSha256`.
+## 3. Grant format
 
-The signed text, repeated here so the mailer and vault do not drift, is:
+The signed text is ASCII. The first line is the header. Each following line is
+`field=value` in exactly this order, each line ending in LF (`0x0A`),
+including the last. Values MUST NOT contain LF. Empty values are written as
+`field=`.
 
 ```text
 Scomm/grant/v1
+iss=https://discovery.scomm.ai
+aud=<space-separated audience origins>
+kid=<signing key id>
 purpose=<purpose>
 identity_id=<64 lowercase hex>
-msk_fingerprint=<64 lowercase hex SHA-256 of the armed MSK public key>
+msk_fingerprint=<64 lowercase hex SHA-256 of the raw MSK public key, or empty>
+amr=<otp | id_token>
+idp=<google | microsoft | empty>
 exp=<unix ms>
-jti=<opaque>
+jti=<base64url of 16 random bytes>
 ```
 
-`identity_id` is the OPRF identity. The directory mailer learns it only for a
-vault-consumed purpose, by blinding the canonical mailbox and calling vault
-`POST /v1/id/oprf/evaluate`. The OPRF secret stays on vault. The token does
-not contain the mailbox address or `mailboxSha256`. Vault checks the
-signature, purpose, expiry, and `jti`, and requires the presented MSK to
-match `msk_fingerprint`.
+The token is:
 
-Directory `enroll` does not call the vault. Its verify response is
-`otp_grant` and `sha256` only. Directory `enroll` and `replace_msk` grants
-are opaque tokens inside the directory process. They are bound to `sha256`,
-not to `identity_id`.
+```text
+base64url(text) "." base64url(Ed25519(text))
+```
+
+Base64url has no padding. The signature is over the text bytes, not over the
+base64url string.
+
+| Field | Rule |
+| --- | --- |
+| `iss` | The directory origin. Verifiers compare it exactly. |
+| `aud` | One or more origins. A verifier accepts the grant only if its own origin is listed. |
+| `kid` | Selects the verification key from the published key set. Unknown `kid` fails. |
+| `identity_id` | The vault OPRF identity. |
+| `msk_fingerprint` | See §2. Consumers that arm or bind an MSK MUST compare it to the presented key. |
+| `amr` / `idp` | How mailbox control was proven. Verifiers MAY refuse `id_token`. |
+| `exp` | At most 15 minutes after issue. The mailer issues 5 minutes. |
+| `jti` | Single-use per verifier. Spend it atomically with an expiry of at least `exp`. |
+
+The grant MUST NOT contain the mailbox address or `mailboxSha256`.
+
+## 4. Key set
+
+The directory publishes its grant verification keys as a key set of
+`kid → Ed25519 public key`. Verifiers are configured with this set. Rotation
+adds a new `kid`, signs with it, and removes the old `kid` after every grant
+signed with it has expired. Production verifiers MUST NOT accept a key
+committed to a public repository.
+
+## 5. Identity
+
+`identity_id` is the OPRF identity for vault purposes. The directory mailer
+learns it only for a vault purpose, by blinding the canonical mailbox and
+calling vault `POST /v1/id/oprf/evaluate` with a bounded timeout. The OPRF
+secret stays on vault. The mailer does not log or persist the mapping beyond
+the OTP lifetime.
+
+On the wire the field is always `identity_id` (snake case) in grant text,
+request bodies, and responses. SDKs MAY expose it as `identityId`. It is
+never called `vault_id`: a vault id is a separate random value the client
+mints for one container.
+
+## 6. Test vectors
+
+[`examples/v1/api/grant-vectors.json`](../examples/v1/api/grant-vectors.json)
+holds valid and invalid tokens signed by a public test key.
+[`tests/grant.mjs`](../tests/grant.mjs) is a reference verifier that `npm test`
+runs against them.

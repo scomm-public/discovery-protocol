@@ -39,7 +39,7 @@ Later protocol work MAY need:
 - distributed or federated resolution so no single log contains all queries;
 - minimization of server-visible metadata (no unnecessary headers, padded queries, or coarse timing).
 
-None of these is selected or designed in protocol `0.1-draft`. The requirement for now is that specifications and implementations **acknowledge** the leak rather than assuming discovery queries are harmless.
+None of these is selected or designed in protocol `0.2-draft`. The requirement for now is that specifications and implementations **acknowledge** the leak rather than assuming discovery queries are harmless.
 
 ## Interaction with security
 

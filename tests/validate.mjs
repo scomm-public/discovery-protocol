@@ -9,6 +9,7 @@ import { dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
+import { verifyGrant } from "./grant.mjs";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const schemaDir = join(root, "schema", "v1");
@@ -53,6 +54,11 @@ const API_EXAMPLE_VALIDATIONS = [
     file: "api/challenge-create-email-otp.json",
     schemaId:
       "https://discovery.scomm.ai/schema/v1/challenges/email-otp.schema.json",
+  },
+  {
+    file: "api/challenge-create-oidc-id-token.json",
+    schemaId:
+      "https://discovery.scomm.ai/schema/v1/challenges/oidc-id-token.schema.json",
   },
   {
     file: "api/challenge-pending.json",
@@ -229,6 +235,51 @@ for (const { file, schemaId } of API_EXAMPLE_VALIDATIONS) {
     ok("signing-vectors.json structure");
   } else if (document !== undefined) {
     fail("signing-vectors.json structure invalid");
+  }
+}
+
+// grant vectors verify with the reference verifier
+{
+  const path = join(examplesDir, "api/grant-vectors.json");
+  const document = readJson(path);
+  if (document) {
+    const base = {
+      keySet: document.key_set,
+      issuer: "https://discovery.scomm.ai",
+      nowMs: document.now_ms,
+    };
+    for (const vector of document.valid) {
+      try {
+        const claims = verifyGrant(vector.token, {
+          ...base,
+          audience: "https://vault.scomm.ai",
+        });
+        const text = Buffer.from(vector.token.split(".")[0], "base64url").toString(
+          "utf8",
+        );
+        if (text !== vector.text) throw new Error("text mismatch");
+        for (const [k, v] of Object.entries(vector.claims)) {
+          if (claims[k] !== v) throw new Error(`claim ${k}`);
+        }
+        ok(`grant vector accepted: ${vector.name}`);
+      } catch (error) {
+        fail(`grant vector ${vector.name}: ${error.message}`);
+      }
+    }
+    for (const vector of document.invalid) {
+      try {
+        verifyGrant(vector.token, { ...base, audience: "https://vault.scomm.ai" });
+        fail(`grant vector accepted but must fail: ${vector.name}`);
+      } catch (error) {
+        if (error.message === vector.reason) {
+          ok(`grant vector rejected (${vector.reason}): ${vector.name}`);
+        } else {
+          fail(
+            `grant vector ${vector.name}: expected ${vector.reason}, got ${error.message}`,
+          );
+        }
+      }
+    }
   }
 }
 

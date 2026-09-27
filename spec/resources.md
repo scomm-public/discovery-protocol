@@ -50,7 +50,12 @@ Requirements:
 | Visibility | Meaning |
 | --- | --- |
 | `public` | Eligible for projection into `GET /v1/mailboxes/{mailboxSha256}` |
+| `gated` | Public material that is never listed or projected. Served one instance at a time to a caller who already knows the mailbox hash and the instance locator (for example `key_id`) |
 | `private` | Authenticated management only; MUST NOT appear in the public document |
+
+`gated` is not an access control. It stops enumeration: nobody can list a
+mailbox's verify keys, but anyone holding a signed message can fetch the one
+key that signed it.
 
 Encrypted vault ciphertext, recovery envelopes, password-wrapped vault
 backups (`scomm-vault-export` hosted on the write host), and similar
@@ -97,7 +102,46 @@ Authorization MUST use a common authenticated request mechanism (see
 [authorization.md](authorization.md)), not ad-hoc fields inside each resource
 `value`.
 
-## 6. Persistence note (non-normative)
+## 6. Type registry
+
+A server supports a resource type by registering it. A registration is data,
+not code, so a new type ships without a new endpoint or database migration.
+
+```json
+{
+  "type": "https://discovery.scomm.ai/types/preferences/languages/v1",
+  "schemaVersion": "1.0",
+  "schema": { "$ref": "…" },
+  "visibility": "public",
+  "projection": "capabilities.preferences.languages",
+  "operations": ["create", "update", "delete"],
+  "maxBytes": 4096,
+  "retention": "delete-on-remove"
+}
+```
+
+| Member | Meaning |
+| --- | --- |
+| `type`, `schemaVersion` | The key. One registration per pair. |
+| `schema` | JSON Schema (Draft 2020-12) for `value`. |
+| `visibility` | `public`, `gated`, or `private` (§2). |
+| `projection` | `capabilities.<path>`, `extensions.<uri>`, or `null`. Only `public` types may project. |
+| `operations` | Mutations the server allows for this type. |
+| `maxBytes` | Upper bound on the serialized `value`. |
+| `retention` | What happens on delete or supersession, for example `delete-on-remove`, `strip-material-on-supersede`, or `retain-10y-after-retire`. |
+
+Writes MUST fail closed:
+
+| Condition | Error `code` |
+| --- | --- |
+| No registration for `type` | `unsupported_type` |
+| `type` registered, `schemaVersion` not | `unsupported_version` |
+| `value` fails the schema or exceeds `maxBytes` | `schema_validation_failed` |
+
+The Discovery Document is built only from `public` registrations with a
+non-null `projection`. Gated and private rows never project.
+
+## 7. Persistence note (non-normative)
 
 A generic wire protocol does **not** require a single JSON blob table.
 Implementations SHOULD keep domain-appropriate storage (normalized key tables,

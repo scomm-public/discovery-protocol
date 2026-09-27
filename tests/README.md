@@ -5,6 +5,9 @@ This repository does not ship a large application test framework. CI proves:
 1. Schema files are valid JSON and valid JSON Schema (Draft 2020-12).
 2. Every example under `examples/` is accepted by the core Discovery schema.
 3. Fixtures under `tests/invalid/` are rejected.
+4. Grant vectors in `examples/v1/api/grant-vectors.json` pass or fail the
+   reference verifier ([grant.mjs](grant.mjs)) as stated. Regenerate them
+   with `node tests/generate-grant-vectors.mjs`.
 
 ## Run locally
 
@@ -37,4 +40,4 @@ These fixtures are not Discovery Documents; they exist only to lock the schema's
 
 ## What is not tested yet
 
-Authenticity, resolution, transport, and live fetching of form schemas are unspecified in protocol `0.1-draft` and have no tests here.
+Authenticity of public documents, resolution, transport, and live fetching of form schemas are unspecified in protocol `0.2-draft` and have no tests here. HTTP API behavior is tested by implementations, not by this repository.

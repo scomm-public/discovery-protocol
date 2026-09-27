@@ -24,7 +24,7 @@
     },
     "visibility": {
       "type": "string",
-      "enum": ["public", "private"]
+      "enum": ["public", "gated", "private"]
     },
     "value": {
       "type": "object"

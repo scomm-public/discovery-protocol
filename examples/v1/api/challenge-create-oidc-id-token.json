@@ -1,0 +1,6 @@
+{
+  "type": "https://discovery.scomm.ai/challenges/oidc-id-token/v1",
+  "purpose": "https://discovery.scomm.ai/operations/msk/replace/v1",
+  "provider": "google",
+  "msk_jkt": "ERERERERERERERERERERERERERERERERERERERERERE"
+}

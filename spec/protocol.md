@@ -79,7 +79,7 @@ See [versioning.md](versioning.md). Implementations MUST NOT treat a core schema
 
 ## 4. Mailbox as discovery subject
 
-Discovery is conceptually associated with a mailbox. The Discovery Document identifies that mailbox in the `mailbox` field.
+Discovery is conceptually associated with a mailbox. The Discovery Document identifies that mailbox by `mailboxSha256`, never by address.
 
 This draft does not bind a mailbox to a single organizational domain model, vendor account, or provider API. How a client **finds which service origin** is authoritative for a mailbox is intentionally unspecified (see [§8](#8-future-resolution-specification)). Once an origin is known, [http-api.md](http-api.md) specifies `GET /v1/mailboxes/{mailboxSha256}`.
 
@@ -94,14 +94,14 @@ A document MUST include:
 | Member | Meaning |
 | --- | --- |
 | `schemaVersion` | Core schema version of the document vocabulary. For this series, the string `"1.0"`. |
-| `mailbox` | The mailbox the document describes. |
+| `mailboxSha256` | Unsalted SHA-256 of the UTF-8 canonical mailbox, 64 lowercase hex characters. |
 
-The following is conceptually valid:
+The document MUST NOT contain the mailbox address. The following is valid:
 
 ```json
 {
   "schemaVersion": "1.0",
-  "mailbox": "alice@example.com"
+  "mailboxSha256": "ff8d9819fc0e12bf0d24892e45987e249a28dce836a85cad60e28eaaa8c6d976"
 }
 ```
 
