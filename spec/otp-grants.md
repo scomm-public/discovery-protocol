@@ -11,17 +11,13 @@ Two challenge types produce a grant: email OTP and OIDC ID token
 
 ## 1. Request and verify (email OTP)
 
-`POST /v1/otp/request` body is `{ "email", "purpose", "msk_jkt" }`. The
-response is a uniform `202`. The address is not stored as a directory row.
-`msk_jkt` is required for `enroll` and `replace_msk` and ignored otherwise.
+Create `POST /v1/mailboxes/{mailboxSha256}/challenges` with
+`type` `https://discovery.scomm.ai/challenges/email-otp/v1`, `email`, a
+purpose URI, and `msk_jkt` when the purpose arms an MSK. The address is not
+stored as a directory row.
 
-`POST /v1/otp/verify` body is `{ "sha256", "otp", "purpose" }`. `sha256` is
-the unsalted SHA-256 of the canonical mailbox. The response does not contain
-an email address.
-
-These two routes are aliases for the `email-otp/v1` challenge type on
-`POST /v1/mailboxes/{mailboxSha256}/challenges` and remain for one SDK minor
-version after the challenge route ships.
+Respond `POST /v1/mailboxes/{mailboxSha256}/challenges/{id}/responses` with
+`{ "response": { "code" } }`. The response does not contain an email address.
 
 ## 2. Purposes
 

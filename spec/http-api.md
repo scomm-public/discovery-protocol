@@ -49,8 +49,9 @@ part of this document.
 | Production | `https://discovery.scomm.ai` | `https://vault.scomm.ai` |
 
 `GET /v1/keys` and `GET /v1/mailboxes/{mailboxSha256}` are served by the
-directory origin. `POST /v1/otp/request` and `POST /v1/otp/verify` are served
-by that same origin. Vault routes are not mounted there.
+directory origin. Mailbox proofs use
+`POST /v1/mailboxes/{mailboxSha256}/challenges` on that same origin. Vault
+routes are not mounted there.
 
 A deployment MAY still split directory read and write tiers. The logical
 directory paths stay the same; only the directory origin differs.

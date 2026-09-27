@@ -170,7 +170,5 @@ The grant records `amr=id_token` and `idp=google` or `idp=microsoft`.
 Hosted clients MAY keep convenience methods such as `sendOtp` / `verifyOtp`
 that map onto create/respond challenge calls.
 
-The SComm hosted profile also serves `POST /v1/otp/request`,
-`POST /v1/otp/verify`, `POST /v1/idtoken/challenge`, and
-`POST /v1/idtoken/verify`. They are aliases for the two types above and are
-removed one SDK minor version after the challenge route ships.
+OIDC provider configuration is `GET /v1/challenges/config`. There is no
+`/v1/otp/*` or `/v1/idtoken/*` alias.
