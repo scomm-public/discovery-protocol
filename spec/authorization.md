@@ -25,8 +25,25 @@ Only profiles that correspond to real hosted behavior are defined here.
 
 ## 2. SComm MSK signed-request profile
 
-State-changing requests in the hosted profile use an Ed25519 signature over a
-canonical UTF-8 string (not HTTP `Authorization` headers by default):
+State-changing requests in the hosted profile use a signature from the MSK
+algorithm registry over a canonical UTF-8 string (not HTTP `Authorization`
+headers by default). The registry is a closed set:
+
+| `signature.algorithm` | Public key | Signature |
+| --- | --- | --- |
+| `ed25519` | 32-byte RFC 8032 public key | 64-byte RFC 8032 signature |
+| `mldsa65-ed25519` | 1,952-byte ML-DSA-65 public key (FIPS 204) concatenated with a 32-byte Ed25519 public key | 3,309-byte ML-DSA-65 signature concatenated with a 64-byte Ed25519 signature |
+
+Both halves of `mldsa65-ed25519` are signatures over the same canonical UTF-8
+string. A verifier accepts the request only when both halves verify. This id
+is not the OpenPGP mail algorithm `openpgp-mldsa65-ed25519`.
+
+`ed25519` is the enrollment default. A later `replace_msk` may arm
+`mldsa65-ed25519`. After arm, the server verifies with the algorithm stored
+for that principal and rejects a `signature.algorithm` that does not match it.
+Verifiers MUST NOT try every registry id.
+
+The canonical string is:
 
 ```text
 SComm/Pubkey/{protocol_version}/{operation}

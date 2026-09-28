@@ -1,5 +1,5 @@
 {
-  "description": "Canonical signed-request bytes for the SComm hosted MSK authorization profile. Signature is Ed25519 over UTF-8 canonical text. Test keys are insecure fixtures — never use in production.",
+  "description": "Canonical signed-request bytes for the SComm hosted MSK authorization profile. This file is the ed25519 registry id. mldsa65-ed25519 uses the same canonical text in signing-vectors-mldsa65-ed25519.json. Test keys are insecure fixtures — never use in production.",
   "insecure_test_material": true,
   "algorithm": "ed25519",
   "protocol_name": "SComm/Pubkey",

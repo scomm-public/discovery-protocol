@@ -119,7 +119,8 @@ spent atomically on success.
 
 A challenge whose purpose arms a Mailbox Signing Key (`enroll`,
 `replace_msk`) MUST carry `msk_jkt`: base64url (no padding) of the SHA-256 of
-the raw 32-byte Ed25519 MSK public key. The server stores it with the OTP
+the raw MSK public key (32 bytes for `ed25519`, 1,984 bytes for
+`mldsa65-ed25519`). The server stores it with the OTP
 record. The grant carries it as `msk_fingerprint` (the same digest in
 lowercase hex). The arming operation MUST reject a key whose fingerprint does
 not match. Without this binding, an attacker who sees the OTP could arm a key

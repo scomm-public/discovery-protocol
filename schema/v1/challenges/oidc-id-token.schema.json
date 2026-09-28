@@ -26,7 +26,7 @@
     "msk_jkt": {
       "type": "string",
       "pattern": "^[A-Za-z0-9_-]{43}$",
-      "description": "base64url SHA-256 of the raw Ed25519 MSK public key. Required when the purpose arms an MSK."
+      "description": "base64url SHA-256 of the raw MSK public key. Required when the purpose arms an MSK."
     }
   }
 }
