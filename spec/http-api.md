@@ -122,7 +122,8 @@ and are not served by Discovery. The public purpose is `verify`.
 
 `GET /v1/keys?sha256={hex}&key_id={id}&purpose=verify` returns at most
 one verify public key when both the unsalted mailbox hash and key-id
-match. `{hex}` is `SHA-256(UTF-8(canonical mailbox))`, not a vault OPRF
+match. `{id}` is the SComm content-addressable key-id (`xxxx-xxxx`).
+`{hex}` is `SHA-256(UTF-8(canonical mailbox))`, not a vault OPRF
 identity. Omitting `key_id` when `purpose` is `verify` MUST fail.
 
 Encryption-purpose selection without `key_id` remains capability-based.

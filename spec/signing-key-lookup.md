@@ -60,19 +60,25 @@ Clients MUST embed this key-id on outbound SComm-signed mail (header
 `X-Scomm-Signing-Key-Id`) so recipients can fetch the verification key
 without listing keys.
 
-### 3.2 Other publishers
+### 3.2 The key-id is the SComm id
 
-Other OpenPGP / S/MIME senders MAY register any opaque key-id string they
-choose (for example a traditional OpenPGP 64-bit Key ID or fingerprint
-fragment), subject to server length limits. Matching is by exact normalized
-equality against the id stored with the artifact.
+The public `key_id` is this content-addressable id. The service does not
+store a second publisher-chosen id. A client MAY omit `scomm_key_id` on
+upload; the service derives it. A client-supplied `scomm_key_id` that does
+not match the derivation MUST be rejected.
+
+Publishing a **different** public key whose derived id matches a key already
+stored for that mailbox MUST be rejected (`scomm_key_id_collision`).
+Publishing the same public key again is not a collision. After encryption
+material is removed, the service keeps the id and a full hash of those bytes
+so the same key can be published again and a different key cannot reuse the id.
 
 ## 4. HTTP
 
 | Query | `purpose=signing` | `purpose=verify` |
 | --- | --- | --- |
 | `sha256` | Request MUST fail | Required — unsalted mailbox hash |
-| `key_id` | Not used | Required — SComm `xxxx-xxxx` or publisher-chosen id |
+| `key_id` | Not used | Required — SComm `xxxx-xxxx` |
 | `capabilities` | Not used | Ignored when `key_id` binds the artifact |
 
 ## 5. Retention and status
@@ -102,15 +108,14 @@ is before `retired_at`. A client SHOULD warn on any signature from a
 `revoked` key made after `revoked_at`, and MAY warn on all of them.
 
 Encryption and key-agreement keys are different: once superseded, their
-public material is removed from the directory. Only `key_id`, family,
-algorithm, fingerprint, and dates remain, so nobody encrypts to a retired
-key.
+public material is removed from the directory. The SComm `key_id`, a hash
+of the removed bytes, family, algorithm, and dates remain, so nobody
+encrypts to a retired key and the same key can be published again.
 
 ## 6. Client verify path
 
 1. Detect `multipart/signed`.
-2. Read `X-Scomm-Signing-Key-Id`, or a publisher-specific issuer id from the
-   signature when that id was registered on the service.
+2. Read `X-Scomm-Signing-Key-Id`. That header is the public `key_id`.
 3. `GET /v1/keys?sha256=…&key_id=…&purpose=verify`, where `sha256` is the
    unsalted mailbox hash.
 4. Verify locally against the returned public material only, then apply the

@@ -23,6 +23,9 @@ The specification is experimental. No stable protocol or schema release has been
 
 ### Changed
 
+- Public `key_id` is the SComm content-addressable id. A separate stored
+  key-id is not kept. Publishing a different public key with the same
+  `scomm_key_id` is rejected.
 - HTTP service API is now specified; mailbox→origin **resolution** remains unspecified.
 - Core Discovery Document schema series remains `1.0` (`capabilities` + `extensions`).
 - Versioning distinguishes protocol, HTTP `/v1/`, document schema, and per-type schemas.

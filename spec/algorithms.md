@@ -21,7 +21,7 @@ Verification artifacts (`purpose=verify`) use a self-signature over the artifact
 | `pqc-mldsa65` | ML-DSA-65 (FIPS 204) S/MIME verification key |
 | `openpgp-mldsa65-ed25519` | RFC 9980 composite: ML-DSA-65 and Ed25519 |
 
-`openpgp-mldsa65-ed25519` public material is an OpenPGP version 6 primary-key packet, algorithm 30. The key material is the 1,952-octet ML-DSA-65 public key followed by the 32-octet Ed25519 public key. The self-signature carries the ML-DSA-65 signature in `value` and the Ed25519 signature in `ed25519_value`. Both signatures cover the same artifact proof bytes. Either failure rejects the artifact.
+`openpgp-mldsa65-ed25519` public material is an OpenPGP version 6 primary-key packet, algorithm 30. The key material is the 32-octet Ed25519 public key followed by the 1,952-octet ML-DSA-65 public key. The self-signature carries the ML-DSA-65 signature in `value` and the Ed25519 signature in `ed25519_value`. Both signatures cover the same artifact proof bytes. Either failure rejects the artifact.
 
 ## Encryption
 
