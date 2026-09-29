@@ -131,6 +131,8 @@ Absence of a capability means that capability is not published. It does **not** 
 
 Clients MUST treat encryption and verification as distinct semantic roles when both are present. An encryption key MUST NOT be assumed to be a verification key, and a verification key MUST NOT be assumed to be an encryption key, unless a future well-defined crypto family profile says otherwise.
 
+The algorithms a service accepts for new keys are listed in [algorithms.md](algorithms.md). A name is added to that list only when the service can check proof of possession and a client can generate and use the algorithm.
+
 Possible future core or extension families include identity, semantics, privacy, compliance, retention, attachments, security requirements, automation, endpoints, and policies. This list is illustrative.
 
 ### 5.4 Extensions

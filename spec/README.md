@@ -5,6 +5,7 @@ These documents define the Discovery Protocol independently of any hosted servic
 | Document | Contents |
 | --- | --- |
 | [protocol.md](protocol.md) | Mailbox-centric model, Discovery Documents, capabilities, validation, and unresolved resolution |
+| [algorithms.md](algorithms.md) | Algorithms accepted for new verification and encryption keys |
 | [http-api.md](http-api.md) | Stable HTTP service API (`/v1/`), errors, idempotency |
 | [resources.md](resources.md) | Resource envelopes, visibility, projection to capabilities |
 | [operations.md](operations.md) | Generic operations for state transitions |
