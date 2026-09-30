@@ -54,9 +54,15 @@ Only operations needed for current hosted behavior:
 | --- | --- | --- |
 | `https://discovery.scomm.ai/operations/msk/enroll/v1` | `enroll_msk` / `arm_msk` | challenge + MSK PoP |
 | `https://discovery.scomm.ai/operations/msk/replace/v1` | `replace_msk` / `arm_replacement_msk` | challenge + MSK PoP |
-| `set_keys`, `set_signing_key`, `set_encryption_key`, `retire_key`, `update_preferences` | same | MSK |
+| `set_keys`, `set_signing_key`, `set_encryption_key`, `retire_key`, `revoke_key`, `withdraw_key`, `update_preferences` | same | MSK |
 
-Do not add speculative operations that have no current server behavior.
+`retire_key`, `revoke_key`, and `withdraw_key` are different transitions.
+Semantics are in [key-lifecycle.md](key-lifecycle.md). None of them destroys
+private key material. There is no `delete_key` directory operation.
+
+`revoke_key` input MUST include `revocation_reason` from the reason enum in
+[`key-lifecycle.schema.json`](../schema/v1/key-lifecycle.schema.json).
+Omitted reason means `UNSPECIFIED`.
 
 ## 5. Idempotency
 

@@ -43,29 +43,56 @@ send-side discovery.
 
 ## 3. Key-id formats
 
-### 3.1 SComm content-addressable key-id
+### 3.1 How `scomm_key_id` is calculated
 
-SComm-generated verification ids are **content-addressable**:
+`scomm_key_id` is the last **8 octets** of the key fingerprint, written as
+**16 uppercase hexadecimal digits**. Comparison is case-insensitive and
+ignores spaces, colons, and hyphens. The canonical stored form has no
+separators.
 
-- Take the **published** verification `public_material` bytes (decoded from
-  the wire base64url form used at upload).
-- Compute `SHA-256(public_material)`.
-- Take the **first 32 bits** (4 octets) of that digest.
-- Encode as **8 hex digits**, grouped `xxxx-xxxx` (case-insensitive on
-  input; servers SHOULD normalize to uppercase for storage/comparison).
+Example: `A1B2C3D4E5F67890`
 
-Example: `A1B2-C3D4`
+Those 8 octets are the trailing bytes of a hash. They are not a header or
+a footer of the key encoding.
+
+**OpenPGP** (classical ECC and PQC, including Ed25519, Cv25519,
+ML-DSA-65+Ed25519, and ML-KEM-768+X25519). The fingerprint is the OpenPGP
+fingerprint of the key packet that performs the operation, the same value
+Sequoia uses as the Key ID:
+
+- Version 4 key packet: SHA-1 of `0x99 || uint16be(body length) || body`.
+  The body starts at the version octet. The fingerprint is 20 octets.
+- Version 6 key packet: SHA-256 of `0x9b || uint32be(body length) || body`.
+  The fingerprint is 32 octets.
+- The key-id is the last 8 octets of that fingerprint.
+
+A verify artifact uses the primary key (packet tag 6). An encryption or
+key-agreement artifact uses the encryption subkey (packet tag 14). A
+certificate that contains only one key packet uses that packet. This is the
+Key ID Sequoia writes in a signature's issuer field or in a public-key
+encrypted session key packet.
+
+**S/MIME and any other published material** (RSA, X25519, ML-DSA-65,
+ML-KEM, and bare SPKI). There is no OpenPGP fingerprint. The fingerprint is
+`SHA-256` of the published `public_material` bytes. The key-id is the last
+8 octets of that 32-octet digest. Armor text, when it is part of those
+bytes, is hashed as input and does not appear at the end of the digest.
 
 Clients MUST embed this key-id on outbound SComm-signed mail (header
 `X-Scomm-Signing-Key-Id`) so recipients can fetch the verification key
-without listing keys.
+without listing keys. The service derives the same value on upload. A
+client-supplied `scomm_key_id` that does not match MUST be rejected.
 
-### 3.2 The key-id is the SComm id
+### 3.2 Responses use `scomm_key_id`
 
-The public `key_id` is this content-addressable id. The service does not
-store a second publisher-chosen id. A client MAY omit `scomm_key_id` on
-upload; the service derives it. A client-supplied `scomm_key_id` that does
-not match the derivation MUST be rejected.
+The only public key identifier is `scomm_key_id`: 16 uppercase hexadecimal
+digits, the 8 octets from §3.1. JSON responses MUST include `scomm_key_id`
+and MUST NOT include `key_id`. `key_id` is the service's private generation
+counter. It is not a publisher-chosen id and it is not returned.
+
+A client MAY omit `scomm_key_id` on upload; the service derives it. A
+client-supplied `scomm_key_id` that does not match the derivation MUST be
+rejected.
 
 Publishing a **different** public key whose derived id matches a key already
 stored for that mailbox MUST be rejected (`scomm_key_id_collision`).
@@ -78,48 +105,64 @@ so the same key can be published again and a different key cannot reuse the id.
 | Query | `purpose=signing` | `purpose=verify` |
 | --- | --- | --- |
 | `sha256` | Request MUST fail | Required — unsalted mailbox hash |
-| `key_id` | Not used | Required — SComm `xxxx-xxxx` |
+| `key_id` | Not used | Required query value — the `scomm_key_id`, 16 hex digits |
 | `capabilities` | Not used | Ignored when `key_id` binds the artifact |
 
-## 5. Retention and status
+## 5. Retention and lifecycle
 
-A signature outlives the key that made it. Old mail must stay verifiable
-after the signer rotates.
+A signature outlives the key that made it. Lifecycle, publication, and
+private-material state are independent. See [key-lifecycle.md](key-lifecycle.md).
 
-- Rotation does not delete verify material. The server marks the old
-  artifact retired and records `retired_at`.
-- Retired verify material MUST remain fetchable by `key_id` for at least
-  10 years after `retired_at`. After that a purge job MAY delete it.
-- A key reported as compromised is marked `revoked` with `revoked_at`. Its
-  material stays fetchable so clients can show why a signature is not
-  trusted.
+- Publishing a successor signing key does not retire or withdraw the
+  predecessor. The predecessor stays `active` and `published` until an
+  explicit `retire_key`, `revoke_key`, or `withdraw_key`.
+- `retire_key` sets lifecycle `retired` and `retired_at`. It does not clear
+  public material and it does not destroy the private key.
+- While publication stays `published`, retired and revoked verify material
+  MUST remain fetchable by `key_id`. A purge MUST NOT tombstone that
+  material before 10 years after `retired_at`. Tombstone clears bytes and
+  keeps the id and material hash. It does not change lifecycle.
+- `revoke_key` sets lifecycle `revoked`, `revoked_at`, and
+  `revocation_reason`. Signing public material stays while `published`.
+  Compromise is reason `KEY_COMPROMISE` or `DEVICE_COMPROMISE`, not a
+  separate status.
+- `withdraw_key` sets publication `withdrawn` and clears public bytes. It
+  does not retire or revoke.
 
-The response includes the status so clients can judge old signatures:
+The verify response includes lifecycle so clients can judge old signatures:
 
 | Member | Meaning |
 | --- | --- |
-| `status` | `active`, `retired`, or `revoked` |
-| `created_at` | ISO 8601 time the key was published |
+| `status` | Lifecycle: `active`, `retired`, or `revoked` |
+| `lifecycle_sequence` | Monotonic order. A stale sequence loses. |
+| `revocation_reason` | Present when `status` is `revoked` |
+| `created_at` | ISO 8601 time the row was created |
 | `retired_at` | Present when `status` is `retired` or `revoked` |
 | `revoked_at` | Present when `status` is `revoked` |
 
-A client SHOULD accept a signature from a `retired` key when the message date
-is before `retired_at`. A client SHOULD warn on any signature from a
-`revoked` key made after `revoked_at`, and MAY warn on all of them.
+Cryptographic validity and lifecycle are separate results. A client MAY
+accept a signature from a `retired` key. A client MUST surface `revoked`
+rather than treating revocation as a failed signature check. A claimed
+message time before `revoked_at` is not proof the signature predates
+compromise.
 
-Encryption and key-agreement keys are different: once superseded, their
-public material is removed from the directory. The SComm `key_id`, a hash
-of the removed bytes, family, algorithm, and dates remain, so nobody
-encrypts to a retired key and the same key can be published again.
+Encryption and key-agreement keys are not verify material. Ordinary
+encryption discovery returns only `active` keys with published bytes.
+Publishing a successor retires the prior same-family encryption artifact
+with reason `ROTATION` and withdraws its public bytes. The `scomm_key_id`
+and a hash of the removed bytes remain. The private key stays in the vault
+until an explicit destroy. `retire_key` alone does not withdraw those bytes;
+current-key selection still excludes `retired` and `revoked`.
 
 ## 6. Client verify path
 
 1. Detect `multipart/signed`.
-2. Read `X-Scomm-Signing-Key-Id`. That header is the public `key_id`.
+2. Read `X-Scomm-Signing-Key-Id`. That header is the `scomm_key_id`.
 3. `GET /v1/keys?sha256=…&key_id=…&purpose=verify`, where `sha256` is the
    unsalted mailbox hash.
 4. Verify locally against the returned public material only, then apply the
-   `status` rules of §5.
+   lifecycle rules of §5. Report the cryptographic result and `status`
+   separately.
 
 Do not call `purpose=signing`. Do not use the vault OPRF identity as
 `sha256`. Do not fall back to an unbound key list when the header is missing.

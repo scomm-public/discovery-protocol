@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://discovery.scomm.ai/schema/v1/key-lifecycle.schema.json",
+  "title": "SComm key lifecycle",
+  "description": "Public KeyDescriptor projection. Private material is forbidden. See spec/key-lifecycle.md.",
+  "type": "object",
+  "$defs": {
+    "purpose": {
+      "type": "string",
+      "enum": ["signing", "encryption"]
+    },
+    "lifecycleStatus": {
+      "type": "string",
+      "enum": ["created", "active", "retired", "revoked"]
+    },
+    "publicationStatus": {
+      "type": "string",
+      "enum": ["unpublished", "published", "withdrawn", "tombstoned"]
+    },
+    "materialStatus": {
+      "type": "string",
+      "enum": ["hot", "archived", "destroyed"]
+    },
+    "revocationReason": {
+      "type": "string",
+      "enum": [
+        "UNSPECIFIED",
+        "KEY_COMPROMISE",
+        "DEVICE_COMPROMISE",
+        "SUPERSEDED",
+        "ALGORITHM_DEPRECATED",
+        "AFFILIATION_CHANGED",
+        "IDENTITY_REVOKED",
+        "CERTIFICATE_REVOKED",
+        "OWNER_REQUEST",
+        "ADMINISTRATIVE"
+      ]
+    },
+    "retirementReason": {
+      "type": "string",
+      "enum": ["ROTATION", "OWNER_REQUEST", "ADMINISTRATIVE", "UNSPECIFIED"]
+    }
+  },
+  "properties": {
+    "schema_version": { "type": "integer", "const": 1 },
+    "scomm_key_id": { "type": "string", "minLength": 1 },
+    "purpose": { "$ref": "#/$defs/purpose" },
+    "lifecycle_status": { "$ref": "#/$defs/lifecycleStatus" },
+    "lifecycle_sequence": { "type": "integer", "minimum": 0 },
+    "publication_status": { "$ref": "#/$defs/publicationStatus" },
+    "retirement_reason": { "$ref": "#/$defs/retirementReason" },
+    "revocation_reason": { "$ref": "#/$defs/revocationReason" },
+    "supersedes": { "type": "string" },
+    "superseded_by": { "type": "string" },
+    "created_at": { "type": "string" },
+    "activated_at": { "type": "string" },
+    "retired_at": { "type": "string" },
+    "revoked_at": { "type": "string" }
+  },
+  "required": ["scomm_key_id", "purpose", "lifecycle_status"],
+  "additionalProperties": true
+}
