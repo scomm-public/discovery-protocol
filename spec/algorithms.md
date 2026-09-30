@@ -18,10 +18,13 @@ Verification artifacts (`purpose=verify`) use a self-signature over the artifact
 | --- | --- |
 | `openpgp-ed25519` | Ed25519 OpenPGP verification key |
 | `smime-ed25519` | Ed25519 S/MIME verification key (`id-Ed25519`, no digest) |
+| `smime-ed25519` | Ed25519 S/MIME verification key (`id-Ed25519`, no digest) |
 | `pqc-mldsa65` | ML-DSA-65 (FIPS 204) S/MIME verification key |
 | `openpgp-mldsa65-ed25519` | RFC 9980 composite: ML-DSA-65 and Ed25519 |
 
-`openpgp-mldsa65-ed25519` public material is an OpenPGP version 6 primary-key packet, algorithm 30. The key material is the 32-octet Ed25519 public key followed by the 1,952-octet ML-DSA-65 public key. The self-signature carries the ML-DSA-65 signature in `value` and the Ed25519 signature in `ed25519_value`. Both signatures cover the same artifact proof bytes. Either failure rejects the artifact.
+`openpgp-mldsa65-ed25519` public material is an OpenPGP version 6 primary-key packet, algorithm 30. The key material is the 32-octet Ed25519 public key followed by the 1,952-octet ML-DSA-65 public key. The self-signature is `{ "format": "openpgp-signature", "value": "<base64url>" }`. `value` is one detached OpenPGP version 6 signature packet over the artifact proof bytes. The packet uses a hash of at least 256 bits and a critical notation `scomm-pop@scomm.ai`. The service rejects the artifact unless both signature components verify and the issuer fingerprint matches the key. `ed25519_value` is not accepted.
+
+`openpgp-ed25519` and `openpgp-cv25519` are the same publication names for RFC 4880 version 4 keys and for RFC 9580 version 6 classical Ed25519/X25519 keys. The packet version lives in the key material. A service does not add a separate algorithm name for the v6 classical profile.
 
 ## Encryption
 
@@ -33,6 +36,10 @@ Encryption artifacts use a decrypt challenge. The client proves it can recover t
 | `smime-x25519` | X25519 S/MIME key agreement |
 | `openpgp-mlkem768-x25519` | ML-KEM-768 combined with X25519 (OpenPGP) |
 | `smime-mlkem768-x25519` | ML-KEM-768 combined with X25519 (S/MIME) |
+
+`openpgp-mlkem768-x25519` public material is an OpenPGP encryption subkey, algorithm 35. The key material is the 32-octet X25519 public key followed by the 1,184-octet ML-KEM-768 encapsulation key. The challenge is `openpgp_message`, a base64url OpenPGP message. A version 6 subkey is challenged with a version 6 public-key encrypted session key packet and a version 2 integrity-protected data packet (AES-256, OCB). A version 4 subkey is challenged with a version 3 public-key encrypted session key packet and a version 1 integrity-protected data packet (AES-256). The literal data is the nonce. The client returns that nonce as the decrypt proof. A raw X25519 share or a SHA-256 concatenation is not a valid challenge.
+
+Algorithm 35 is accepted on an OpenPGP version 4 or version 6 encryption subkey. Algorithms 30 and 36 are accepted only on version 6 keys. This profile does not publish algorithms 31, 32, 33, 34, or 36; a service rejects those names with `unsupported_algorithm`.
 
 ## Rejection
 
