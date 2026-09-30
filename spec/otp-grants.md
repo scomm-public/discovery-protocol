@@ -38,9 +38,10 @@ A directory grant is an opaque single-use token held by the directory. It is
 bound to `sha256`, purpose, and `msk_fingerprint`, and it never leaves the
 directory's trust boundary except as a bearer string returned to the client.
 A vault grant is the signed token of §3 with `aud` containing the vault
-origin and `identity_id` set to the OPRF identity. `replace_msk` returns both
-so the client can arm the new MSK in the directory and then rebind the vault
-to the same key.
+origin and `identity_id` set to the same unsalted mailbox SHA-256 that the
+directory uses as `mailboxSha256`. `replace_msk` returns both so the client
+can arm the new MSK in the directory and then rebind the vault to the same
+key.
 
 ### 2.1 Arming in one call
 
@@ -96,13 +97,15 @@ base64url string.
 | `iss` | The directory origin. Verifiers compare it exactly. |
 | `aud` | One or more origins. A verifier accepts the grant only if its own origin is listed. |
 | `kid` | Selects the verification key from the published key set. Unknown `kid` fails. |
-| `identity_id` | The vault OPRF identity. |
+| `identity_id` | Unsalted `SHA-256(UTF-8(canonical mailbox))` (same value as `mailboxSha256`). |
 | `msk_fingerprint` | See §2. Consumers that arm or bind an MSK MUST compare it to the presented key. |
 | `amr` / `idp` | How mailbox control was proven. Verifiers MAY refuse `id_token`. |
 | `exp` | At most 15 minutes after issue. The mailer issues 5 minutes. |
 | `jti` | Single-use per verifier. Spend it atomically with an expiry of at least `exp`. |
 
-The grant MUST NOT contain the mailbox address or `mailboxSha256`.
+The grant MUST NOT contain the mailbox address. For vault purposes the
+`identity_id` field IS the mailbox hash; directory-purpose verify responses
+MAY still return that hash as `sha256` instead of `identity_id`.
 
 ## 4. Key set
 
@@ -114,11 +117,11 @@ committed to a public repository.
 
 ## 5. Identity
 
-`identity_id` is the OPRF identity for vault purposes. The directory mailer
-learns it only for a vault purpose, by blinding the canonical mailbox and
-calling vault `POST /v1/id/oprf/evaluate` with a bounded timeout. The OPRF
-secret stays on vault. The mailer does not log or persist the mapping beyond
-the OTP lifetime.
+`identity_id` is the unsalted mailbox SHA-256 for every purpose that carries
+it, including vault purposes. There is no identity OPRF and no separate vault
+identity derivation. The mailer computes
+`SHA-256(UTF-8(canonical mailbox))` locally when it holds the address
+(OTP request or ID-token verify) and writes that digest into the grant.
 
 On the wire the field is always `identity_id` (snake case) in grant text,
 request bodies, and responses. SDKs MAY expose it as `identityId`. It is

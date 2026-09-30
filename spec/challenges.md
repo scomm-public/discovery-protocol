@@ -61,9 +61,10 @@ profile. They are not 6-digit authenticator TOTP codes.
 
 A successful response returns `status: "satisfied"` plus the grants of
 [otp-grants.md §2](otp-grants.md#2-purposes): `otp_grant`, and `sha256` for
-directory purposes or `identity_id` for vault purposes. `replace_msk` also
-returns `vault_grant`. A failed code decrements `attemptsRemaining`; at zero
-the response is `429 challenge_failed`.
+directory purposes or `identity_id` for vault purposes. Both digests are the
+unsalted mailbox SHA-256. `replace_msk` also returns `vault_grant`. A failed
+code decrements `attemptsRemaining`; at zero the response is
+`429 challenge_failed`.
 
 Purpose URIs:
 

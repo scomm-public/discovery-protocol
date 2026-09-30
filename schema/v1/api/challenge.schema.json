@@ -46,12 +46,12 @@
     "identity_id": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
-      "description": "Respond only, vault purposes: OPRF identity"
+      "description": "Respond only, vault purposes: unsalted mailbox SHA-256 (same as sha256 / mailboxSha256)"
     },
     "sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$",
-      "description": "Respond only, directory purposes: mailbox hash"
+      "description": "Respond only, directory purposes: unsalted mailbox SHA-256"
     }
   }
 }

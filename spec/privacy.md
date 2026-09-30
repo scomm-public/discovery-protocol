@@ -1,8 +1,8 @@
 # Privacy considerations
 
 Discovery is associated with a mailbox. The directory lookup key is the
-unsalted SHA-256 of the canonical mailbox (`mailboxSha256`), not the
-address itself and not a vault OPRF identity.
+unsalted SHA-256 of the canonical mailbox (`mailboxSha256`). The same digest
+is the vault `identity_id`. There is no separate salted or OPRF identity.
 
 ## Lookup
 
@@ -10,16 +10,18 @@ The client hashes the canonical mailbox locally and fetches
 `GET /v1/mailboxes/{mailboxSha256}` or `GET /v1/keys?sha256=`. A directory
 log can learn that a client queried that digest. Anyone who can guess an
 address can compute the same digest. This is a public existence signal
-for published keys. It is not a vault capability.
+for published keys. Vault principals use the same digest, so a guessed
+address also names the vault principal UUID derived from it.
 
 The mailer, which sends mailbox OTP, runs on the directory origin and is the
 component that sees the address on OTP request. Vault OTP purposes
 (`vault_open`, `recovery_envelope`, `recovery_generation`, `vault_backup`)
 are sent only when that directory already has an armed MSK for the mailbox
 hash. The verify response for those purposes is a signed grant. The grant
-carries `purpose`, `identity_id`, `msk_fingerprint`, `exp`, and `jti`. It
-does not carry the mailbox address or `mailboxSha256`. Vault verifies the
-grant and does not call the directory.
+carries `purpose`, `identity_id` (the mailbox SHA-256), `msk_fingerprint`,
+`exp`, and `jti`. It does not carry the mailbox address. Vault verifies the
+grant. To check MSK signatures it asks Discovery for the armed public key
+(`GET /v1/msk?sha256=`) using that same hash and does not store the key.
 
 ## Published document contents
 

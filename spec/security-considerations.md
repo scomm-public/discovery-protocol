@@ -33,13 +33,14 @@ halves used to verify signatures, lets a caller try keys until one succeeds.
 - Verifiers MUST bind to the **key-id of the key that signed the message**.
 - Discovery services MUST require **both** the unsalted mailboxSha256 and a
   **valid key-id** before returning material for `purpose=verify`.
-  The vault OPRF identity MUST NOT be used as this locator.
+  The vault uses that same unsalted digest as `identity_id`; there is no
+  separate identity OPRF locator.
 - `GET /v1/mailboxes/{mailboxSha256}` MUST NOT project
   `capabilities.crypto.signing` or `capabilities.crypto.verification`.
 
-See [signing-key-lookup.md](signing-key-lookup.md). SComm key-ids are
-content-addressable (`xxxx-xxxx` from the first 32 bits of
-`SHA-256(public_material)`). Other publishers MAY register their own ids.
+See [signing-key-lookup.md](signing-key-lookup.md). A SComm key-id is the
+last 8 octets of the key fingerprint (16 hex digits): the OpenPGP Key ID
+for OpenPGP, or the last 8 octets of `SHA-256(public_material)` for S/MIME.
 
 The initial `crypto` schema is provisional. Revocation and authenticated
 document authenticity remain open design areas.

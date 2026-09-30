@@ -14,9 +14,11 @@ These documents define the Discovery Protocol independently of any hosted servic
 | [versioning.md](versioning.md) | Protocol vs HTTP API vs core schema vs extension versions |
 | [extensions.md](extensions.md) | URI-namespaced third-party capabilities |
 | [security-considerations.md](security-considerations.md) | Attacks, authenticity, and open cryptographic design questions |
-| [signing-key-lookup.md](signing-key-lookup.md) | Signing keys stay on the device or in the vault; verify fetch is unsalted `sha256` + SComm `key_id` + `purpose=verify` |
+| [signing-key-lookup.md](signing-key-lookup.md) | Signing keys stay on the device or in the vault; verify fetch is unsalted `sha256` + `scomm_key_id` + `purpose=verify`. Responses do not include `key_id`. |
+| [key-lifecycle.md](key-lifecycle.md) | Lifecycle, Discovery publication, and vault material are independent. Retire, revoke, withdraw, and destroy are different operations. |
 | [privacy.md](privacy.md) | Lookup leakage and privacy-preserving resolution as future work |
 | [otp-grants.md](otp-grants.md) | Mailer OTP purposes and vault grants |
+| [errors.md](errors.md) | 4xx classes, weights, existence hiding, `http_reject` log |
 
 JSON Schemas in [`../schema/v1`](../schema/v1) are the normative structural definition of Discovery Documents for core schema series `1.x` as currently drafted.
 

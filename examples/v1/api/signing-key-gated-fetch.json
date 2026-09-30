@@ -1,19 +1,18 @@
 {
-  "description": "Gated verify-key fetch requires the unsalted sha256 of the canonical mailbox and key_id (SComm display form XXXX-XXXX). key_id is the scomm_key_id. purpose=verify. purpose=signing is rejected. The vault OPRF identity is not this locator.",
+  "description": "Gated verify-key fetch requires the unsalted sha256 of the canonical mailbox and query key_id set to the scomm_key_id (16 hex digits, 8 octets). The response contains scomm_key_id and does not contain key_id. purpose=verify. purpose=signing is rejected. Vault identity_id is that same unsalted sha256.",
   "request": {
     "method": "GET",
     "path": "/v1/keys",
     "query": {
       "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      "key_id": "A1B2-C3D4",
+      "key_id": "A1B2C3D4E5F67890",
       "purpose": "verify"
     }
   },
   "response": {
     "family": "pgp",
     "suite": "openpgp-ed25519",
-    "key_id": "A1B2-C3D4",
-    "scomm_key_id": "A1B2-C3D4",
+    "scomm_key_id": "A1B2C3D4E5F67890",
     "purpose": "verify",
     "public_material": "BASE64URL...",
     "status": "retired",

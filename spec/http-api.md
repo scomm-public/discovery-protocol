@@ -75,8 +75,8 @@ as `application/discovery+json` are not required in this draft.
 `{mailboxSha256}` is 64 lowercase hexadecimal characters:
 `SHA-256(UTF-8(canonical mailbox))`. The mailbox address is not a path
 parameter and MUST NOT appear in discovery URLs. Clients compute the
-digest locally. This hash is a public directory locator, not a vault
-capability. Vault OPRF identity is specified outside this document.
+digest locally. The same digest is the vault `identity_id`; there is no
+separate identity OPRF.
 
 ## 6. Stable paths
 
@@ -122,23 +122,47 @@ and are not served by Discovery. The public purpose is `verify`.
 
 `GET /v1/keys?sha256={hex}&key_id={id}&purpose=verify` returns at most
 one verify public key when both the unsalted mailbox hash and key-id
-match. `{id}` is the SComm content-addressable key-id (`xxxx-xxxx`).
-`{hex}` is `SHA-256(UTF-8(canonical mailbox))`, not a vault OPRF
-identity. Omitting `key_id` when `purpose` is `verify` MUST fail.
+match. `{id}` is the `scomm_key_id` (16 hex digits, 8 octets). The
+response member is `scomm_key_id`. Responses MUST NOT include `key_id`.
+`{hex}` is `SHA-256(UTF-8(canonical mailbox))`, the same digest used as
+vault `identity_id`. Omitting `key_id` when `purpose` is `verify` MUST fail.
 
 Encryption-purpose selection without `key_id` remains capability-based.
+
+## 7.2 MSK public key GET
+
+`GET /v1/msk?sha256={hex}` returns the one armed master signing public key
+for that unsalted mailbox hash, plus replaced public keys so older vault
+signatures remain verifiable. `{hex}` is `SHA-256(UTF-8(canonical mailbox))`.
+
+```json
+{
+  "identity_id": "<64 hex sha256>",
+  "algorithm": "ed25519",
+  "public_key": "<base64url>",
+  "archived_public_keys": [
+    { "algorithm": "ed25519", "public_key": "<base64url>" }
+  ]
+}
+```
+
+`algorithm` is `ed25519` or `mldsa65-ed25519`. The response echoes the
+`sha256` that was asked for as `identity_id`. It MUST NOT include the
+mailbox address, the seed, a device list, or a pending key. No armed key
+is `404 not_found` (lookup miss; see [errors.md](errors.md)). This key is
+not part of the Discovery Document.
 
 ## 8. Errors
 
 Error responses use a stable envelope (see
-[`api/error.schema.json`](../schema/v1/api/error.schema.json)):
+[`api/error.schema.json`](../schema/v1/api/error.schema.json) and
+[errors.md](errors.md)):
 
 ```json
 {
   "error": {
     "code": "challenge_expired",
-    "message": "The challenge has expired.",
-    "details": {}
+    "message": "The challenge has expired."
   }
 }
 ```
@@ -146,7 +170,9 @@ Error responses use a stable envelope (see
 Clients MUST treat `error.code` as the machine-readable signal. They MUST NOT
 require parsing `message` for control flow.
 
-Recommended HTTP status mapping (non-exhaustive):
+Reject classes, weights for a DoS agent, and the `http_reject` log line are
+normative in [errors.md](errors.md). Recommended HTTP status mapping
+(non-exhaustive):
 
 | Code | Typical status |
 | --- | --- |
@@ -159,13 +185,13 @@ Recommended HTTP status mapping (non-exhaustive):
 | `invalid_signature` | 401 |
 | `expired_signature` | 401 |
 | `replay_detected` | 401 |
-| `challenge_not_found` | 404 |
 | `challenge_expired` | 400 |
 | `challenge_failed` | 401 |
 | `challenge_already_used` | 409 |
 | `rate_limited` | 429 |
 | `conflict` | 409 |
 | `precondition_failed` | 412 |
+| `payload_too_large` | 413 |
 | `internal_error` | 500 |
 
 ## 9. Idempotency

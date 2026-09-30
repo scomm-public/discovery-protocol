@@ -12,7 +12,7 @@
       "$ref": "#/$defs/keySet"
     },
     "verification": {
-      "description": "Not projected on the public Discovery Document. Verify material is fetched with GET /v1/keys purpose=verify, the unsalted mailbox sha256, and a key_id. Signing private keys are not a discovery capability. The vault OPRF identity is not this locator. Do not use verify keys for encryption unless a future family profile explicitly allows dual use.",
+      "description": "Not projected on the public Discovery Document. Verify material is fetched with GET /v1/keys purpose=verify, the unsalted mailbox sha256, and query key_id set to the scomm_key_id (16 hex digits). Responses contain scomm_key_id and do not contain key_id. Signing private keys are not a discovery capability. Vault identity_id is that same unsalted mailbox sha256. Do not use verify keys for encryption unless a future family profile explicitly allows dual use.",
       "$ref": "#/$defs/keySet"
     }
   },
@@ -40,7 +40,7 @@
           "minLength": 1
         },
         "keyId": {
-          "description": "Publisher key identifier. SComm content-addressable signing ids are eight hex digits grouped as xxxx-xxxx (first 32 bits of SHA-256 over published public_material). Other publishers MAY use their own opaque ids (for example OpenPGP Key IDs).",
+          "description": "SComm key-id: 16 uppercase hex digits, the last 8 octets of the key fingerprint. OpenPGP uses the OpenPGP Key ID (last 8 octets of the v4 or v6 fingerprint of the signing or encryption key packet). S/MIME uses the last 8 octets of SHA-256 over the published public material.",
           "type": "string",
           "minLength": 1,
           "maxLength": 128
