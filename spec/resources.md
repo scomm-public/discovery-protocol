@@ -57,11 +57,9 @@ Requirements:
 mailbox's verify keys, but anyone holding a signed message can fetch the one
 key that signed it.
 
-Encrypted vault ciphertext, recovery envelopes, password-wrapped vault
-backups (`scomm-vault-export` hosted on the write host), and similar
-confidential material MUST use `private` (or dedicated non-Discovery APIs).
-They MUST NOT be published as public Discovery capabilities and MUST NOT
-appear on `GET /v1/mailboxes/{mailboxSha256}`.
+Encrypted vault ciphertext and CKVF backups MUST NOT be Discovery resources.
+They MUST NOT appear on `GET /v1/mailboxes/{mailboxSha256}` and MUST NOT be
+given upload or sync routes on this origin. Clients keep them in CKVF files.
 
 ## 3. Public vs management representation
 

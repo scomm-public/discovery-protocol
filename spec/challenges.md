@@ -60,22 +60,22 @@ Mailbox OTP codes are **11-character Base62** (`0-9A-Za-z`) in the SComm hosted
 profile. They are not 6-digit authenticator TOTP codes.
 
 A successful response returns `status: "satisfied"` plus the grants of
-[otp-grants.md §2](otp-grants.md#2-purposes): `otp_grant`, and `sha256` for
-directory purposes or `identity_id` for vault purposes. Both digests are the
-unsalted mailbox SHA-256. `replace_msk` also returns `vault_grant`. A failed
+[otp-grants.md §2](otp-grants.md#2-purposes): `otp_grant` and `sha256`.
+SComm clients do not request a `vault_grant`. A failed
 code decrements `attemptsRemaining`; at zero the response is
 `429 challenge_failed`.
 
-Purpose URIs:
+Purpose URIs used by SComm:
 
 | Purpose URI | Grant purpose |
 | --- | --- |
 | `https://discovery.scomm.ai/operations/msk/enroll/v1` | `enroll` |
 | `https://discovery.scomm.ai/operations/msk/replace/v1` | `replace_msk` |
-| `https://discovery.scomm.ai/operations/vault/open/v1` | `vault_open` |
-| `https://discovery.scomm.ai/operations/vault/backup-fetch/v1` | `vault_backup` |
-| `https://discovery.scomm.ai/operations/recovery/envelope-fetch/v1` | `recovery_envelope` |
-| `https://discovery.scomm.ai/operations/recovery/generation/v1` | `recovery_generation` |
+
+Historical vault-host purpose URIs (`vault/open/v1`, `vault/backup-fetch/v1`,
+`recovery/envelope-fetch/v1`, `recovery/generation/v1`) are not part of the
+SComm local-vault flow. Clients MUST NOT send them. Directory
+implementations MUST NOT treat them as permission to store CKVF ciphertext.
 
 Status:
 

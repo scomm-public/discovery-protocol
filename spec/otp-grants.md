@@ -3,8 +3,9 @@
 **Protocol version:** `0.2-draft`
 
 The directory origin proves mailbox control and signs a short-lived grant.
-Vault is a different origin (`https://vault.scomm.ai`, debug
-`http://127.0.0.1:3001`) and does not send mail.
+SComm Vault recovery does not use this grant. A mailbox OTP can arm or
+replace an MSK. It cannot unwrap a CKVF VEK. Vault ciphertext is not stored
+on the directory origin.
 
 Two challenge types produce a grant: email OTP and OIDC ID token
 ([challenges.md](challenges.md)). Both produce the same grant format.
@@ -24,24 +25,24 @@ Respond `POST /v1/mailboxes/{mailboxSha256}/challenges/{id}/responses` with
 | Purpose | Verify returns | Mail is sent when | `msk_fingerprint` |
 | --- | --- | --- | --- |
 | `enroll` | `otp_grant` (directory) | The address is deliverable | MSK being armed (from `msk_jkt`) |
-| `replace_msk` | `otp_grant` (directory) and `vault_grant` | An armed directory MSK exists | replacement MSK (from `msk_jkt`) |
-| `vault_open` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
-| `recovery_envelope` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
-| `recovery_generation` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
-| `vault_backup` | `otp_grant` (vault) | An armed directory MSK exists | armed directory MSK |
+| `replace_msk` | `otp_grant` (directory) | An armed directory MSK exists | replacement MSK (from `msk_jkt`) |
 
-If a vault purpose has no armed directory MSK, the request still returns `202`
+SComm clients MUST NOT request `vault_open`, `recovery_envelope`,
+`recovery_generation`, or `vault_backup`. Those purposes existed for an
+optional vault host. They do not decrypt a CKVF container. A verifier MAY
+still accept a grant whose `aud` names an operator-run vault host; SComm
+Discovery does not require that audience, and SComm clients MUST ignore a
+`vault_grant` if a deployment still returns one.
+
+If `replace_msk` has no armed directory MSK, the request still returns `202`
 and no message is sent. The ID-token path returns `409 master_key_not_armed`
 because the caller has already proven control of the mailbox.
 
 A directory grant is an opaque single-use token held by the directory. It is
 bound to `sha256`, purpose, and `msk_fingerprint`, and it never leaves the
 directory's trust boundary except as a bearer string returned to the client.
-A vault grant is the signed token of §3 with `aud` containing the vault
-origin and `identity_id` set to the same unsalted mailbox SHA-256 that the
-directory uses as `mailboxSha256`. `replace_msk` returns both so the client
-can arm the new MSK in the directory and then rebind the vault to the same
-key.
+`replace_msk` arms the new MSK in the directory. It does not rebind or
+decrypt a vault.
 
 ### 2.1 Arming in one call
 

@@ -40,18 +40,23 @@ all resource types share one schema version forever.
 
 ## 3. Hosts
 
-Directory and mailer share one origin. Vault is a different origin and is not
-part of this document.
+Directory and mailer share one origin. This document does not specify a vault
+origin. SComm does not host vault ciphertext. Private keys stay in a CKVF
+container on the client. Synchronization, when the user enables it, copies
+those containers to storage the user controls (CKVF untrusted-sync profile).
 
-| Mode | Directory and mailer | Vault |
-| --- | --- | --- |
-| Debug | `http://127.0.0.1:3000` | `http://127.0.0.1:3001` |
-| Production | `https://discovery.scomm.ai` | `https://vault.scomm.ai` |
+| Mode | Directory and mailer |
+| --- | --- |
+| Debug | `http://127.0.0.1:3000` |
+| Production | `https://discovery.scomm.ai` |
 
 `GET /v1/keys` and `GET /v1/mailboxes/{mailboxSha256}` are served by the
 directory origin. Mailbox proofs use
-`POST /v1/mailboxes/{mailboxSha256}/challenges` on that same origin. Vault
-routes are not mounted there.
+`POST /v1/mailboxes/{mailboxSha256}/challenges` on that same origin.
+
+Discovery MUST NOT mount vault upload, download, backup, or sync routes.
+An optional CKVF vault-host profile exists for operators who are not SComm;
+it is not part of this API and it is not required to decrypt a CKVF container.
 
 A deployment MAY still split directory read and write tiers. The logical
 directory paths stay the same; only the directory origin differs.

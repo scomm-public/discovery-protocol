@@ -32,6 +32,9 @@ The specification is experimental. No stable protocol or schema release has been
 
 ### Changed
 
+- SComm does not operate a vault origin. Directory grants arm or replace an
+  MSK and MUST NOT be required to decrypt a CKVF vault. Vault-host OTP
+  purposes are not part of the SComm client flow.
 - Public responses identify a key with `scomm_key_id` only: the last 8
   octets of the fingerprint, 16 hex digits. OpenPGP uses Sequoia's Key ID.
   S/MIME uses the last 8 octets of SHA-256 of the published material.
